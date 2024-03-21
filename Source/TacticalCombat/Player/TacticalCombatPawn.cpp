@@ -82,9 +82,11 @@ void ATacticalCombatPawn::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 }
 
+
 void ATacticalCombatPawn::Zoom(float AxisValue)
 {
 	TargetArmLengthDesired += -AxisValue * ZoomSpeed;
+	TargetArmLengthDesired = FMath::Clamp(TargetArmLengthDesired, ZoomMin, ZoomMax);
 }
 
 void ATacticalCombatPawn::InterpolateZoom(float DeltaTime)

@@ -20,6 +20,41 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+public:
+	UFUNCTION()
+	float GetZoomMin() { return ZoomMin; }
+	UFUNCTION()
+	void SetZoomMin(float Value) { ZoomMin = Value; }
+	UFUNCTION()
+	float GetZoomMax() { return ZoomMax; }
+	UFUNCTION()
+	void SetZoomMax(float Value) { ZoomMax = Value; }
+	UFUNCTION()
+	float GetZoomSpeed() { return ZoomSpeed; }
+	UFUNCTION()
+	void SetZoomSpeed(float Value) { ZoomSpeed = Value; }
+	UFUNCTION()
+	float GetZoomSmoothness() { return ZoomSmoothness; }
+	UFUNCTION()
+	void SetZoomSmoothness(float Value) { ZoomSmoothness = Value; }
+
+	UFUNCTION()
+	float GetMovementSpeed() { return MovementSpeed; }
+	UFUNCTION()
+	void SetMovementSpeed(float Value) { MovementSpeed = Value; }
+	UFUNCTION()
+	float GetMovementSmoothness() { return MovementSmoothness; }
+	UFUNCTION()
+	void SetMovementSmoothness(float Value) { MovementSmoothness = Value; }
+
+	UFUNCTION()
+	float GetRotationDegree() { return RotationDegree; }
+	UFUNCTION()
+	void SetRotationDegree(float Value) { RotationDegree = Value; }
+	UFUNCTION()
+	float GetRotationSmoothness() { return RotationSmoothness; }
+	UFUNCTION()
+	void SetRotationSmoothness(float Value) { RotationSmoothness = Value; }
 
 protected:
 	// Called when the game starts or when spawned
@@ -37,6 +72,10 @@ protected:
 
 
 	// Zoom
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float ZoomMin = 100.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float ZoomMax = 5000.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ZoomSpeed = 5.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
