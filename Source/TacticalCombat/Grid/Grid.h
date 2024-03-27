@@ -46,5 +46,7 @@ protected:
 	FName GetGridShapeName();
 	FVector GetGridBottomLeftCornerLocaion();
 	FVector GetSnapGridCenterLocation();
+	FVector GetTileLocationFromGridIndex(int IndexX, int IndexY);
+	FQuat GetTileRotationFromGridIndex(int IndexX, int IndexY);
 	bool TryUpdateInstancedMeshByCurrentShape();
 };

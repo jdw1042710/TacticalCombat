@@ -17,4 +17,6 @@ class TACTICALCOMBAT_API UGridUtility : public UBlueprintFunctionLibrary
 public:
 	UFUNCTION(BlueprintCallable)
 	static FVector SnapVectorToVector(const FVector& Location, const FVector& GridSize);
+	UFUNCTION(BlueprintCallable)
+	static bool IsEven(float Value);
 };

@@ -10,3 +10,8 @@ FVector UGridUtility::SnapVectorToVector(const FVector& Location, const FVector&
 	float Z = FMath::GridSnap<float>(Location.Z, GridSize.Z);
 	return FVector(X, Y, Z);
 }
+
+bool UGridUtility::IsEven(const float Value)
+{
+	return (int)Value % 2 == 0;
+}
