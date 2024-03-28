@@ -18,9 +18,27 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION(BlueprintCallable)
+	void SpawnGrid(const FVector& Location, const FVector& TileSize, const FVector2D& TileCount, EGridShape Shape);
+
+	UFUNCTION()
+	void SetLocation(FVector Value);
+	UFUNCTION()
+	FVector GetLocation() { return GridLocation; }
+	UFUNCTION()
+	void SetTileCount(FVector2D Value);
+	UFUNCTION()
+	FVector2D GetTileCount() { return GridTileCount; }
+	UFUNCTION()
+	void SetTileSize(FVector Value);
+	UFUNCTION()
+	FVector GetTileSize() { return GridTileSize; }
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	virtual void OnConstruction(const FTransform& Transform) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UInstancedStaticMeshComponent* InstancedMesh;
@@ -40,9 +58,7 @@ protected:
 	UDataTable* GridShapeDataTable;
 	FGridShapeData* GridShapeData;
 
-	UFUNCTION(BlueprintCallable)
-	void SpawnGrid(const FVector& Location, const FVector& TileSize, const FVector2D& TileCount, EGridShape Shape);
-
+	
 	FName GetGridShapeName();
 	FVector GetGridBottomLeftCornerLocaion();
 	FVector GetSnapGridCenterLocation();

@@ -1,29 +1,26 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "SpinBoxWithLabel.generated.h"
+#include "SpinBoxWithLabelVector2D.generated.h"
 
 
 
 
 UCLASS()
-class TACTICALCOMBAT_API USpinBoxWithLabel : public UUserWidget
+class TACTICALCOMBAT_API USpinBoxWithLabelVector2D : public UUserWidget
 {
 	GENERATED_BODY()
 
-	DECLARE_MULTICAST_DELEGATE_OneParam(FValueChangedEvent, float);
+	DECLARE_MULTICAST_DELEGATE_OneParam(FValueChangedEvent, FVector2D);
 public:
 	UFUNCTION(BlueprintCallable)
 	void SetLabelName(FString Name);
+	UFUNCTION(BlueprintCallable)
+	FVector2D GetValue() { return Value; }
 
 	UFUNCTION(BlueprintCallable)
-	float GetValue() { return Value; }
-
-	UFUNCTION(BlueprintCallable)
-	void SetValue(float NewValue);
+	void SetValue(FVector2D NewValue);
 
 	void AddValueChangedEvent(UObject* UserObject, FName CallbackName);
 
@@ -42,7 +39,9 @@ protected:
 
 	// Spin Box
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	class USpinBox* ValueSpinBox;
+	class USpinBox* ValueSpinBoxX;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	class USpinBox* ValueSpinBoxY;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SpinBoxWithLabel|SpinBox")
 	float MinValue;
@@ -53,12 +52,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SpinBoxWithLabel|SpinBox")
 	float MaxSliderValue;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SpinBoxWithLabel|SpinBox")
-	float Value;
+	FVector2D Value;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SpinBoxWithLabel|SpinBox")
-	int MinFractDigits;
+	float MinFractDigits;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SpinBoxWithLabel|SpinBox")
-	int MaxFractDigits;
+	float MaxFractDigits;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SpinBoxWithLabel|SpinBox")
 	bool bAlwaysSnapToDelta;
@@ -68,7 +67,9 @@ protected:
 	FValueChangedEvent ValueChangedEvent;
 
 	UFUNCTION(BlueprintCallable)
-	void OnValueChanged(float NewValue) { Value = NewValue; ValueChangedEvent.Broadcast(NewValue); };
-
+	void OnValueXChanged(float NewValueX);
+	UFUNCTION(BlueprintCallable)
+	void OnValueYChanged(float NewValueY);
+	void BroadCastValueChange();
 	void UpdateValueSpinBox();
 };

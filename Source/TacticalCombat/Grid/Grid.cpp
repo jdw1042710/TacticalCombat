@@ -16,14 +16,19 @@ AGrid::AGrid()
 	{
 		GridShapeDataTable = DataTableObject.Object;
 	}
-	// SpawnGrid(GridLocation, GridTileSize, GridTileCount, GridShape);
+	InstancedMesh->ClearInstances();
 }
 
 // Called when the game starts or when spawned
 void AGrid::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	SpawnGrid(GetActorLocation(), GridTileSize, GridTileCount, GridShape);
+}
+
+void AGrid::OnConstruction(const FTransform& Transform)
+{
+	SpawnGrid(GetActorLocation(), GridTileSize, GridTileCount, GridShape);
 }
 
 
@@ -34,21 +39,35 @@ void AGrid::Tick(float DeltaTime)
 
 }
 
+void AGrid::SetLocation(FVector Value)
+{
+	SpawnGrid(Value, GridTileSize, GridTileCount, GridShape);
+}
+
+void AGrid::SetTileCount(FVector2D Value)
+{
+	SpawnGrid(GridLocation, GridTileSize, Value, GridShape);
+}
+
+void AGrid::SetTileSize(FVector Value)
+{
+	SpawnGrid(GridLocation, Value, GridTileCount, GridShape);
+}
+
 void AGrid::SpawnGrid(const FVector& Location, const FVector& TileSize, const FVector2D& TileCount, EGridShape Shape)
 {
-	if (GridShapeDataTable == nullptr) 
-	{
-		UE_LOG(LogTemp, Error, TEXT("There is no such a table"));
-		return;
-	}
+	SetActorLocation(Location);
 	GridLocation = Location;
 	GridTileSize = TileSize;
 	GridTileCount = TileCount.RoundToVector();
 	GridShape = Shape;
-
-	bool bSuccess = TryUpdateInstancedMeshByCurrentShape();
-	if(!bSuccess) return;
 	InstancedMesh->ClearInstances();
+	bool bSuccess = TryUpdateInstancedMeshByCurrentShape();
+	if (!bSuccess) 
+	{
+		UE_LOG(LogTemp, Error, TEXT("Fail To Load Instance Mesh"));
+		return;
+	}
 	for (int X = 0; X < TileCount.X; X++)
 	{
 		for (int Y = 0; Y < TileCount.Y; Y++)
@@ -122,7 +141,7 @@ FVector AGrid::GetTileLocationFromGridIndex(int IndexX, int IndexY)
 {
 	FVector2D Index(IndexX, IndexY);
 	FVector2D Multiplier(1, 1);
-	FVector Offset;
+	FVector Offset(0);
 	switch (GridShape)
 	{
 	case EGridShape::Hexagon:
@@ -157,6 +176,11 @@ FQuat AGrid::GetTileRotationFromGridIndex(int IndexX, int IndexY)
 bool AGrid::TryUpdateInstancedMeshByCurrentShape()
 {
 	FName ShapeName = GetGridShapeName();
+	if (GridShapeDataTable == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("There is no such a table"));
+		return false;
+	}
 	GridShapeData = GridShapeDataTable->FindRow<FGridShapeData>(ShapeName, ShapeName.ToString());
 	if (GridShapeData == nullptr) return false; // Invalid Data
 
