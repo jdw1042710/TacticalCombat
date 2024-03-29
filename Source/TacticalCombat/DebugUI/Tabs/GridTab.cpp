@@ -10,6 +10,7 @@
 #include "../SubWidgets/SpinBoxWithLabel.h"
 #include "../SubWidgets/SpinBoxWithLabelVector2D.h"
 #include "../SubWidgets/SpinBoxWithLabelVector.h"
+#include "../../Level/LevelLoader.h"	
 #include "DrawDebugHelpers.h"
 
 void UGridTab::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -47,10 +48,17 @@ void UGridTab::NativeConstruct()
 
 		MethodName = "OnTileSizeSpinBoxValueChanged";
 		TileSizeSpinBox->AddValueChangedEvent(this, MethodName);
-		
-
 	}
+
+	LevelLoader = GetWorld()->SpawnActor<ALevelLoader>();
+	EnvironmentComboBox->OnSelectionChanged.AddDynamic(this, &UGridTab::OnEnvironmentComboBoxChanged);
+	LevelLoader->LoadLevel(FName(EnvironmentComboBox->GetSelectedOption()));
 	Super::NativeConstruct();
+}
+
+void UGridTab::OnEnvironmentComboBoxChanged(FString Value, ESelectInfo::Type seltype)
+{
+	LevelLoader->LoadLevel(FName(Value));
 }
 
 void UGridTab::OnGridShapeComboBoxChanged(FString Value, ESelectInfo::Type seltype)

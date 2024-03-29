@@ -25,6 +25,12 @@ protected:
 	virtual void NativeConstruct() override;
 
 	class AGrid* Grid;
+
+	class ALevelLoader* LevelLoader;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	class UComboBoxString* EnvironmentComboBox;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
 	class UComboBoxString* GridShapeComboBox;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
@@ -48,6 +54,9 @@ protected:
 	UCheckBox* BottomLeftDebugLineCheckBox;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* BottomLeftDebugLineTextBlock;
+
+	UFUNCTION()
+	void OnEnvironmentComboBoxChanged(FString Value, ESelectInfo::Type seltype);
 
 	UFUNCTION()
 	void OnGridShapeComboBoxChanged(FString Value, ESelectInfo::Type seltype);
