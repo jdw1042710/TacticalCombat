@@ -12,6 +12,8 @@
 class USpinBoxWithLabel;
 class USpinBoxWithLabelVector2D;
 class USpinBoxWithLabelVector;
+class UCheckBox;
+class UTextBlock;
 UCLASS()
 class TACTICALCOMBAT_API UGridTab : public UUserWidget
 {
@@ -34,6 +36,19 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
 	USpinBoxWithLabelVector* TileSizeSpinBox;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	UCheckBox* BoundsDebugLineCheckBox;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	UCheckBox* CenterDebugLineCheckBox;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* CenterDebugLineTextBlock;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	UCheckBox* BottomLeftDebugLineCheckBox;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* BottomLeftDebugLineTextBlock;
+
 	UFUNCTION()
 	void OnGridShapeComboBoxChanged(FString Value, ESelectInfo::Type seltype);
 
@@ -46,8 +61,10 @@ protected:
 	UFUNCTION()
 	void OnTileSizeSpinBoxValueChanged(FVector Value);
 
+	void TryUpdateGrid(float DeltaTime);
 	void UpdateGrid();
-
 	bool bReGenFlag = false;
 	float ReGenCoolTime = 0;
+
+	void DrawDebugLines(float DeltaTime);
 };

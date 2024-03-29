@@ -26,6 +26,10 @@ public:
 	UFUNCTION()
 	FVector GetLocation() { return GridLocation; }
 	UFUNCTION()
+	FVector GetCenterLocation() { return GetSnapGridCenterLocation(); }
+	UFUNCTION()
+	FVector GetBottomLeftLocation() { return GetGridBottomLeftCornerLocaion(); }
+	UFUNCTION()
 	void SetTileCount(FVector2D Value);
 	UFUNCTION()
 	FVector2D GetTileCount() { return GridTileCount; }
