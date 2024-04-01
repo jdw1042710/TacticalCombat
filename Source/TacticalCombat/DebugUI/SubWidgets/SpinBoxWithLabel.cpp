@@ -46,6 +46,11 @@ void USpinBoxWithLabel::AddValueChangedEvent(UObject* UserObject, FName Callback
 	ValueChangedEvent.AddUFunction(UserObject, CallbackName);
 }
 
+void USpinBoxWithLabel::AddValueChangedEvent(FOnFloatValueChanged Callback)
+{
+	ValueChangedEvent.Add(Callback);
+}
+
 void USpinBoxWithLabel::UpdateLabelText()
 {
 	LabelText->SetText(FText::FromString(LabelName));

@@ -19,18 +19,22 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable)
-	void SpawnGrid(const FVector& Location, const FVector& TileSize, const FVector2D& TileCount, EGridShape Shape);
+	void SpawnGrid(const FVector& Location, const FVector& TileSize, const FIntPoint& TileCount, EGridShape Shape, bool bAlwaysSpawn = false);
 
 	UFUNCTION()
 	void SetLocation(FVector Value);
 	UFUNCTION()
 	FVector GetLocation() { return GridLocation; }
 	UFUNCTION()
+	void SetGridOffest(float Value);
+	UFUNCTION()
+	float GetGridOffest() { return GridOffestFromGround; }
+	UFUNCTION()
 	FVector GetCenterLocation() { return GetSnapGridCenterLocation(); }
 	UFUNCTION()
 	FVector GetBottomLeftLocation() { return GetGridBottomLeftCornerLocaion(); }
 	UFUNCTION()
-	void SetTileCount(FVector2D Value);
+	void SetTileCount(FIntPoint Value);
 	UFUNCTION()
 	FVector2D GetTileCount() { return GridTileCount; }
 	UFUNCTION()
@@ -51,10 +55,13 @@ protected:
 	FVector GridLocation = FVector::ZeroVector;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FVector GridTileSize = FVector(100, 100, 100);
+	float GridOffestFromGround = 1;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FVector2D GridTileCount = FVector2D(1, 1);
+	FVector GridTileSize = FVector(100, 100, 50);
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FIntPoint GridTileCount = FIntPoint(9, 9);
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	EGridShape GridShape = EGridShape::Square;
@@ -69,4 +76,5 @@ protected:
 	FVector GetTileLocationFromGridIndex(int IndexX, int IndexY);
 	FQuat GetTileRotationFromGridIndex(int IndexX, int IndexY);
 	bool TryUpdateInstancedMeshByCurrentShape();
+	bool TraceForGround(FVector TraceLocation, float Range, TArray<FHitResult>& Hits);
 };

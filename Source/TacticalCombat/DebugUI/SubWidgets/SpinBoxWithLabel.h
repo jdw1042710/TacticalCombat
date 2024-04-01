@@ -26,6 +26,7 @@ public:
 	void SetValue(float NewValue);
 
 	void AddValueChangedEvent(UObject* UserObject, FName CallbackName);
+	void AddValueChangedEvent(FOnFloatValueChanged Callback);
 
 protected:
 	virtual void NativePreConstruct() override;

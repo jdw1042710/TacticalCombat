@@ -39,6 +39,7 @@ void UGridTab::NativeConstruct()
 		LocationSpinBox->SetValue(Grid->GetLocation());
 		TileCountSpinBox->SetValue(Grid->GetTileCount());
 		TileSizeSpinBox->SetValue(Grid->GetTileSize());
+		GridOffsetSpinBox->SetValue(Grid->GetGridOffest());
 
 		MethodName = "OnLocationSpinBoxValueChanged";
 		LocationSpinBox->AddValueChangedEvent(this, MethodName);
@@ -48,6 +49,9 @@ void UGridTab::NativeConstruct()
 
 		MethodName = "OnTileSizeSpinBoxValueChanged";
 		TileSizeSpinBox->AddValueChangedEvent(this, MethodName);
+		
+		FOnFloatValueChanged Callback = FOnFloatValueChanged::CreateUObject(this, &UGridTab::OnGridOffsetSpinBoxValueChanged);
+		GridOffsetSpinBox->AddValueChangedEvent(Callback);
 	}
 
 	LevelLoader = GetWorld()->SpawnActor<ALevelLoader>();
@@ -85,6 +89,13 @@ void UGridTab::OnTileSizeSpinBoxValueChanged(FVector Value)
 	bReGenFlag = true;
 }
 
+void UGridTab::OnGridOffsetSpinBoxValueChanged(float Value)
+{
+	if (Grid == nullptr) return;
+	Grid->SetGridOffest(Value);
+	bReGenFlag = true;
+}
+
 void UGridTab::TryUpdateGrid(float DeltaTime)
 {
 	if (ReGenCoolTime > 0)
@@ -104,7 +115,7 @@ void UGridTab::UpdateGrid()
 {
 	if (Grid == nullptr) return;
 	EGridShape Shape = (EGridShape)GridShapeComboBox->GetSelectedIndex();
-	Grid->SpawnGrid(LocationSpinBox->GetValue(), TileSizeSpinBox->GetValue(), TileCountSpinBox->GetValue(), Shape);
+	Grid->SpawnGrid(LocationSpinBox->GetValue(), TileSizeSpinBox->GetValue(),TileCountSpinBox->GetValue().IntPoint(), Shape);
 }
 
 void UGridTab::DrawDebugLines(float DeltaTime)

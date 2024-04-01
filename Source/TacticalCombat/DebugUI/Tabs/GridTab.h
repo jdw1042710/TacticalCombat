@@ -41,6 +41,8 @@ protected:
 	USpinBoxWithLabelVector2D* TileCountSpinBox;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
 	USpinBoxWithLabelVector* TileSizeSpinBox;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	USpinBoxWithLabel* GridOffsetSpinBox;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
 	UCheckBox* BoundsDebugLineCheckBox;
@@ -69,6 +71,9 @@ protected:
 
 	UFUNCTION()
 	void OnTileSizeSpinBoxValueChanged(FVector Value);
+
+	UFUNCTION()
+	void OnGridOffsetSpinBoxValueChanged(float Value);
 
 	void TryUpdateGrid(float DeltaTime);
 	void UpdateGrid();

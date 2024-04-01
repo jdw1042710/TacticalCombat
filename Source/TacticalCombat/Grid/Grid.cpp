@@ -3,6 +3,7 @@
 
 #include "Grid.h"
 #include "GridUtility.h"
+#include "DrawDebugHelpers.h"
 
 // Sets default values
 AGrid::AGrid()
@@ -23,12 +24,12 @@ AGrid::AGrid()
 void AGrid::BeginPlay()
 {
 	Super::BeginPlay();
-	SpawnGrid(GetActorLocation(), GridTileSize, GridTileCount, GridShape);
+
 }
 
 void AGrid::OnConstruction(const FTransform& Transform)
 {
-	SpawnGrid(GetActorLocation(), GridTileSize, GridTileCount, GridShape);
+	// SpawnGrid(GetActorLocation(), GridTileSize, GridTileCount, GridShape);
 }
 
 
@@ -44,7 +45,13 @@ void AGrid::SetLocation(FVector Value)
 	SpawnGrid(Value, GridTileSize, GridTileCount, GridShape);
 }
 
-void AGrid::SetTileCount(FVector2D Value)
+void AGrid::SetGridOffest(float Value)
+{
+	GridOffestFromGround = Value;
+	SpawnGrid(GridLocation, GridTileSize, GridTileCount, GridShape);
+}
+
+void AGrid::SetTileCount(FIntPoint Value)
 {
 	SpawnGrid(GridLocation, GridTileSize, Value, GridShape);
 }
@@ -54,12 +61,12 @@ void AGrid::SetTileSize(FVector Value)
 	SpawnGrid(GridLocation, Value, GridTileCount, GridShape);
 }
 
-void AGrid::SpawnGrid(const FVector& Location, const FVector& TileSize, const FVector2D& TileCount, EGridShape Shape)
+void AGrid::SpawnGrid(const FVector& Location, const FVector& TileSize, const FIntPoint& TileCount, EGridShape Shape, bool bAlwaysSpawn)
 {
 	SetActorLocation(Location);
 	GridLocation = Location;
 	GridTileSize = TileSize;
-	GridTileCount = TileCount.RoundToVector();
+	GridTileCount = TileCount;
 	GridShape = Shape;
 	InstancedMesh->ClearInstances();
 	bool bSuccess = TryUpdateInstancedMeshByCurrentShape();
@@ -68,6 +75,8 @@ void AGrid::SpawnGrid(const FVector& Location, const FVector& TileSize, const FV
 		UE_LOG(LogTemp, Error, TEXT("Fail To Load Instance Mesh"));
 		return;
 	}
+	// For Debugging
+	// FlushPersistentDebugLines(GetWorld());
 	for (int X = 0; X < TileCount.X; X++)
 	{
 		for (int Y = 0; Y < TileCount.Y; Y++)
@@ -76,7 +85,40 @@ void AGrid::SpawnGrid(const FVector& Location, const FVector& TileSize, const FV
 			NewTileTransform.SetLocation(GetTileLocationFromGridIndex(X, Y));
 			NewTileTransform.SetRotation(GetTileRotationFromGridIndex(X, Y));
 			NewTileTransform.SetScale3D(GridTileSize / GridShapeData->Size);
-			InstancedMesh->AddInstanceWorldSpace(NewTileTransform);
+			TArray<FHitResult> Hits;
+			bool bTraceSuccess = TraceForGround(NewTileTransform.GetLocation(), 500.0f, Hits);;
+			if (bAlwaysSpawn || bTraceSuccess)
+			{
+				if (bTraceSuccess) 
+				{
+					// For Debugging
+					//DrawDebugSphere(
+					//	GetWorld(),
+					//	NewTileTransform.GetLocation(),
+					//	10,
+					//	1,
+					//	FColor::Yellow ,
+					//	true,
+					//	-1.f,
+					//	0,
+					//	1);
+					// For Debugging
+					//DrawDebugSphere(
+					//	GetWorld(),
+					//	Hits[0].Location,
+					//	10,
+					//	1,
+					//	FColor::Red,
+					//	true,
+					//	-1.f,
+					//	0,
+					//	1);
+					FVector TracedLoctation = NewTileTransform.GetLocation();
+					TracedLoctation.Z = FMath::GridSnap<float>(Hits[0].ImpactPoint.Z, GridTileSize.Z) + GridOffestFromGround;
+					NewTileTransform.SetLocation(TracedLoctation);
+				}
+				InstancedMesh->AddInstanceWorldSpace(NewTileTransform);
+			}
 		}
 	}
 }
@@ -92,30 +134,30 @@ FVector AGrid::GetGridBottomLeftCornerLocaion()
 {
 	// GridTileCount의 각각의 홀수 값을 짝수로 만들어주는 Offset
 	// 정 중앙의 Tile을 정확히 벗어났을 때 Snap이 되도록 Offset만큼을 빼준다.
-	FVector2D TileCountOffset;
+	FIntPoint TileCountOffset;
 	// Center에서 Left Bottm까지의 TileCount를 얻기위한 Divider;
-	FVector2D TileCountDivider;
+	FIntPoint TileCountDivider;
 	// 대각선 벡터의 절반
 	FVector HalfDiagVector;
 	switch (GridShape)
 	{
 	case EGridShape::Square:
-		TileCountOffset = FVector2D(
+		TileCountOffset = FIntPoint(
 			UGridUtility::IsEven(GridTileCount.X) ? 0 : 1,
 			UGridUtility::IsEven(GridTileCount.Y) ? 0 : 1);
-		TileCountDivider = FVector2D(2);
-		HalfDiagVector = FVector((GridTileCount - TileCountOffset) / TileCountDivider * FVector2D(GridTileSize), 0);
+		TileCountDivider = FIntPoint(2);
+		HalfDiagVector = FVector(FVector2D((GridTileCount - TileCountOffset) / TileCountDivider) * FVector2D(GridTileSize), 0);
 		break;
 	case EGridShape::Hexagon:
 		// TileCountOffset = FVector2D(1, 1);
-		TileCountDivider = FVector2D(3, 2); // Y방향은 Grid가 반씩 겹쳐 존재하므로 4로 나눈다
-		HalfDiagVector = FVector((GridTileCount - TileCountOffset) / TileCountDivider * FVector2D(GridTileSize), 0);
+		TileCountDivider = FIntPoint(3, 2); // Y방향은 Grid가 반씩 겹쳐 존재하므로 4로 나눈다
+		HalfDiagVector = FVector(FVector2D((GridTileCount - TileCountOffset) / TileCountDivider) * FVector2D(GridTileSize), 0);
 		HalfDiagVector = UGridUtility::SnapVectorToVector(HalfDiagVector, GridTileSize * FVector(1.5, 1, 1));
 		break;
 	case EGridShape::Triangle:
-		TileCountOffset = FVector2D(1, 1);
-		TileCountDivider = FVector2D(2, 4); // Y방향은 Grid가 반씩 겹쳐 존재하므로 4로 나눈다
-		HalfDiagVector = FVector((GridTileCount - TileCountOffset) / TileCountDivider * FVector2D(GridTileSize), 0);
+		TileCountOffset = FIntPoint(1, 1);
+		TileCountDivider = FIntPoint(2, 4); // Y방향은 Grid가 반씩 겹쳐 존재하므로 4로 나눈다
+		HalfDiagVector = FVector(FVector2D((GridTileCount - TileCountOffset) / TileCountDivider) * FVector2D(GridTileSize), 0);
 		HalfDiagVector = UGridUtility::SnapVectorToVector(HalfDiagVector, GridTileSize * FVector(2, 1, 1));
 		break;
 	}
@@ -155,7 +197,7 @@ FVector AGrid::GetTileLocationFromGridIndex(int IndexX, int IndexY)
 	return 	GetGridBottomLeftCornerLocaion()
 		+ GridTileSize * FVector(Index * Multiplier, 0)
 		+ Offset // For Hexagon;
-		+ FVector::UpVector; // To Avoid Collapse With Floor;
+		+ FVector::UpVector * GridOffestFromGround; // To Avoid Collapse With Floor;
 }
 
 FQuat AGrid::GetTileRotationFromGridIndex(int IndexX, int IndexY)
@@ -188,4 +230,21 @@ bool AGrid::TryUpdateInstancedMeshByCurrentShape()
 	InstancedMesh->SetStaticMesh(GridShapeData->FlatMesh);
 	InstancedMesh->SetMaterial(0, GridShapeData->FlatBorderMaterial);
 	return true;
+}
+
+bool AGrid::TraceForGround(FVector TraceLocation, float Range, TArray<FHitResult>& Hits)
+{
+	FVector RangeVecter = FVector::UpVector * Range;
+	float Radius = GridTileSize.X / (GridShape == EGridShape::Triangle ? 5 : 3);
+	FCollisionShape CollisionShape = FCollisionShape::MakeSphere(Radius);
+	ECollisionChannel Channel = ECC_GameTraceChannel1;
+	GetWorld()->SweepMultiByChannel(
+		Hits,
+		TraceLocation + RangeVecter,
+		TraceLocation - RangeVecter,
+		FQuat::Identity,
+		Channel,
+		CollisionShape
+	);
+	return Hits.Num() > 0;
 }
