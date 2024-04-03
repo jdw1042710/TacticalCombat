@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
-
 #include "GridShapeData.generated.h"
 
 
@@ -40,4 +39,3 @@ struct FGridShapeData : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UMaterialInstance* FlatFilledMaterial;
 };
-

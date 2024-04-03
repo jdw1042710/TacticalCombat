@@ -5,7 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "GridShapeData.h"
+#include "TileType.h"
 #include "Grid.generated.h"
+
 
 UCLASS()
 class TACTICALCOMBAT_API AGrid : public AActor
@@ -66,15 +68,14 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	EGridShape GridShape = EGridShape::Square;
 
-	UDataTable* GridShapeDataTable;
 	FGridShapeData* GridShapeData;
-
 	
-	FName GetGridShapeName();
 	FVector GetGridBottomLeftCornerLocaion();
 	FVector GetSnapGridCenterLocation();
 	FVector GetTileLocationFromGridIndex(int IndexX, int IndexY);
 	FQuat GetTileRotationFromGridIndex(int IndexX, int IndexY);
 	bool TryUpdateInstancedMeshByCurrentShape();
-	bool TraceForGround(FVector TraceLocation, float Range, TArray<FHitResult>& Hits);
+	bool TraceForGround(FVector TraceLocation, float Range, FVector& OutLocation);
+	FVector GetLocationFromHits(const TArray<FHitResult>& Hits, ETileType& TileType);
+	bool IsTileWalkable(ETileType TileType);
 };
