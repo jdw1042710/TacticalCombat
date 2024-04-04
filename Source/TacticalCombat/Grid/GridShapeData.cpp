@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "GridShapeUtility.h"
+#include "GridShapeData.h"
 
 UDataTable* UGridShapeUtility::GridShapeDataTable = nullptr;
 

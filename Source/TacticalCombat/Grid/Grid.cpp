@@ -2,31 +2,27 @@
 
 
 #include "Grid.h"
+#include "GridVisualizer.h"
 #include "GridModifier.h"
 #include "GridUtility.h"
-#include "GridShapeUtility.h"
 #include "DrawDebugHelpers.h"
 
 // Sets default values
 AGrid::AGrid()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
-	InstancedMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Instanced Static Mesh"));
-	InstancedMesh->ClearInstances();
+	ChildActor = CreateDefaultSubobject<UChildActorComponent>(TEXT("ChildActor_GridVisualizer"));
+	ChildActor -> SetChildActorClass(AGridVisualizer::StaticClass());
 }
 
 // Called when the game starts or when spawned
 void AGrid::BeginPlay()
 {
+	GridLocation = GetActorLocation();
 	Super::BeginPlay();
-
 }
 
 void AGrid::OnConstruction(const FTransform& Transform)
 {
-	// SpawnGrid(GetActorLocation(), GridTileSize, GridTileCount, GridShape);
 }
 
 
@@ -37,6 +33,11 @@ void AGrid::Tick(float DeltaTime)
 
 }
 
+void AGrid::SpawnGrid()
+{
+	SpawnGrid(GetActorLocation(), GridTileSize, GridTileCount, GridShape);
+}
+
 void AGrid::SetLocation(FVector Value)
 {
 	SpawnGrid(Value, GridTileSize, GridTileCount, GridShape);
@@ -44,8 +45,8 @@ void AGrid::SetLocation(FVector Value)
 
 void AGrid::SetGridOffest(float Value)
 {
-	GridOffestFromGround = Value;
-	SpawnGrid(GridLocation, GridTileSize, GridTileCount, GridShape);
+	GridOffset = Value;
+	SpawnGrid();
 }
 
 void AGrid::SetTileCount(FIntPoint Value)
@@ -65,7 +66,14 @@ void AGrid::SpawnGrid(const FVector& Location, const FVector& TileSize, const FI
 	GridTileSize = TileSize;
 	GridTileCount = TileCount;
 	GridShape = Shape;
-	InstancedMesh->ClearInstances();
+
+	GridVisualizer = Cast<AGridVisualizer>(ChildActor->GetChildActor());
+	if (!ensure(GridVisualizer != nullptr)) 
+	{ 
+		UE_LOG(LogTemp, Warning, TEXT("Grid Visualizer Is Not Created"));
+		return; 
+	}
+
 	bool bSuccess = TryUpdateInstancedMeshByCurrentShape();
 	if (!bSuccess) 
 	{
@@ -81,24 +89,37 @@ void AGrid::SpawnGrid(const FVector& Location, const FVector& TileSize, const FI
 			FTransform NewTileTransform;
 			NewTileTransform.SetLocation(GetTileLocationFromGridIndex(X, Y));
 			NewTileTransform.SetRotation(GetTileRotationFromGridIndex(X, Y));
-			NewTileTransform.SetScale3D(GridTileSize / GridShapeData->Size);
-			FVector ImpactPoint;
-			bool bTraceSuccess = TraceForGround(NewTileTransform.GetLocation(), 500.0f, ImpactPoint);;
-			if (bAlwaysSpawn || bTraceSuccess)
+			NewTileTransform.SetScale3D(GridTileSize / GridShapeData.Size);
+			if (bAlwaysSpawn)
 			{
-				if (bTraceSuccess) 
-				{
-					FVector TracedLoctation = NewTileTransform.GetLocation();
-					TracedLoctation.Z = FMath::GridSnap<float>(ImpactPoint.Z, GridTileSize.Z) + GridOffestFromGround;
-					NewTileTransform.SetLocation(TracedLoctation);
-				}
-				InstancedMesh->AddInstanceWorldSpace(NewTileTransform);
+				AddGridTile(FTileData(FIntPoint(X, Y), ETileType::Ground, NewTileTransform));
 			}
+			else 
+			{
+				// Add Tile By Trace Result
+				FVector ImpactPoint;
+				ETileType TileType = ETileType::None;
+				TraceForGround(NewTileTransform.GetLocation(), 500.0f, ImpactPoint, TileType);
+				FVector TracedLoctation = NewTileTransform.GetLocation();
+				TracedLoctation.Z = FMath::GridSnap<float>(ImpactPoint.Z, GridTileSize.Z) + GridOffset;
+				NewTileTransform.SetLocation(TracedLoctation);
+				AddGridTile(FTileData(FIntPoint(X, Y), TileType, NewTileTransform));			}
 		}
 	}
 }
 
+void AGrid::DestoryGrid()
+{
+	GridTiles.Empty();
+	GridVisualizer->DestroyGridVisual();
+}
 
+void AGrid::AddGridTile(FTileData Tile)
+{
+	// UE_LOG(LogTemp, Display, TEXT("%d %d"), Tile.Index.X, Tile.Index.Y);
+	GridTiles.Add(Tile.Index, Tile);
+	GridVisualizer->UpdateTileVisual(Tile);
+}
 
 FVector AGrid::GetGridBottomLeftCornerLocaion()
 {
@@ -166,8 +187,8 @@ FVector AGrid::GetTileLocationFromGridIndex(int IndexX, int IndexY)
 	}
 	return 	GetGridBottomLeftCornerLocaion()
 		+ GridTileSize * FVector(Index * Multiplier, 0)
-		+ Offset // For Hexagon;
-		+ FVector::UpVector * GridOffestFromGround; // To Avoid Collapse With Floor;
+		+ Offset // For Hexagon
+		+ FVector::UpVector * GridOffset;
 }
 
 FQuat AGrid::GetTileRotationFromGridIndex(int IndexX, int IndexY)
@@ -187,16 +208,15 @@ FQuat AGrid::GetTileRotationFromGridIndex(int IndexX, int IndexY)
 
 bool AGrid::TryUpdateInstancedMeshByCurrentShape()
 {
-	GridShapeData = UGridShapeUtility::GetShapeData(GridShape);
-	if (GridShapeData == nullptr) return false; // Invalid Data
-
+	FGridShapeData* DataPointer = UGridShapeUtility::GetShapeData(GridShape);
+	if (DataPointer == nullptr) return false; // Invalid Data
+	GridShapeData = *DataPointer;
 	// Update Instanced Mesh
-	InstancedMesh->SetStaticMesh(GridShapeData->FlatMesh);
-	InstancedMesh->SetMaterial(0, GridShapeData->FlatBorderMaterial);
+	GridVisualizer->Initialize(this);
 	return true;
 }
 
-bool AGrid::TraceForGround(FVector TraceLocation, float Range, FVector& OutLocation)
+bool AGrid::TraceForGround(FVector TraceLocation, float Range, FVector& OutLocation, ETileType& TileType)
 {
 	TArray<FHitResult> Hits;
 	FVector RangeVecter = FVector::UpVector * Range;
@@ -211,27 +231,16 @@ bool AGrid::TraceForGround(FVector TraceLocation, float Range, FVector& OutLocat
 		Channel,
 		CollisionShape
 	);
-	ETileType TileType = ETileType::None;
-	OutLocation = GetLocationFromHits(Hits, TileType);
-	return IsTileWalkable(TileType);
+	if (Hits.Num() > 0) 
+	{
+		OutLocation = GetLocationFromHits(Hits, TileType);
+	}
+	return Hits.Num() > 0;
 }
 
 FVector AGrid::GetLocationFromHits(const TArray<FHitResult>& Hits, ETileType& TileType)
 {
 	FVector Result = FVector::ZeroVector;
-	//for (auto Hit : Hits)
-	//{
-	//	AGridModifier* Modifier = Cast<AGridModifier>(Hit.Actor);
-	//	if (Modifier != nullptr) 
-	//	{
-	//		TileType = Modifier->GetType();
-	//	}
-	//	else 
-	//	{
-	//		Result = Hit.ImpactPoint;
-	//		TileType = ETileType::Ground;
-	//	}
-	//}
 	if (Hits.Num() > 0) 
 	{
 		Result = Hits[0].ImpactPoint;
@@ -247,9 +256,4 @@ FVector AGrid::GetLocationFromHits(const TArray<FHitResult>& Hits, ETileType& Ti
 	}
 
 	return Result;
-}
-
-bool AGrid::IsTileWalkable(ETileType TileType)
-{
-	return TileType == ETileType::Ground;
 }

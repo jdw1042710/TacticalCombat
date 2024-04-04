@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "GridShapeData.h"
-#include "TileType.h"
+#include "TileData.h"
 #include "GridModifier.generated.h"
 
 UCLASS()

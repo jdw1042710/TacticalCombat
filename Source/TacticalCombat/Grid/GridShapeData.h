@@ -39,3 +39,18 @@ struct FGridShapeData : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UMaterialInstance* FlatFilledMaterial;
 };
+
+UCLASS()
+class TACTICALCOMBAT_API UGridShapeUtility : public UBlueprintFunctionLibrary
+{
+	GENERATED_BODY()
+
+public:
+	UGridShapeUtility();
+
+	static FGridShapeData* GetShapeData(EGridShape Shape);
+	static FName GetGridShapeName(EGridShape Shape);
+
+private:
+	static UDataTable* GridShapeDataTable;
+};

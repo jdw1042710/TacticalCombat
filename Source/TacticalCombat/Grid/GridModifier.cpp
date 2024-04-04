@@ -2,7 +2,6 @@
 
 
 #include "GridModifier.h"
-#include "GridShapeUtility.h"
 
 // Sets default values
 AGridModifier::AGridModifier()
