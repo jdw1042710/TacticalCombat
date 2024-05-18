@@ -26,26 +26,36 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SpawnGrid(const FVector& Location, const FVector& TileSize, const FIntPoint& TileCount, EGridShape Shape, bool bAlwaysSpawn = false);
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void SetLocation(FVector Value);
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	FVector GetLocation() { return GetActorLocation(); }
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void SetGridOffest(float Value);
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	float GetGridOffest() { return GridOffset; }
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	FVector GetCenterLocation() { return GetSnapGridCenterLocation(); }
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	FVector GetBottomLeftLocation() { return GetGridBottomLeftCornerLocaion(); }
-	UFUNCTION()
+
+	UFUNCTION(BlueprintCallable)
+	FVector GetCursorLocationOnGrid();
+	UFUNCTION(BlueprintCallable)
 	void SetTileCount(FIntPoint Value);
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	FVector2D GetTileCount() { return GridTileCount; }
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void SetTileSize(FVector Value);
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	FVector GetTileSize() { return GridTileSize; }
+	UFUNCTION(BlueprintCallable)
+	FIntPoint GetTileIndexUnderCursor();
+	UFUNCTION(BlueprintCallable)
+	FIntPoint GetTileIndexFromWorldLocation(FVector Location);
+
+	UFUNCTION(BlueprintCallable)
+	bool GetTileDataFromIndex(FIntPoint Index, FTileData& Data);
 
 	FGridShapeData GetCurrentShapeData() { return GridShapeData; }
 

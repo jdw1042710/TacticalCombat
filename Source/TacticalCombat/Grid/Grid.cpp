@@ -49,6 +49,28 @@ void AGrid::SetGridOffest(float Value)
 	SpawnGrid();
 }
 
+FVector AGrid::GetCursorLocationOnGrid()
+{
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+	FHitResult Hit;
+	// Line Trace가 성공하면 해당 값을 반환
+	bool bHitSuccess;
+	bHitSuccess = PlayerController->GetHitResultUnderCursor(ECollisionChannel::ECC_GameTraceChannel2, false, Hit);
+	if (bHitSuccess)
+	{
+		return Hit.Location;
+	}
+	// 실패시 임의로 마우스 포인터와 평면간의 교차지점을 반환
+	FVector MouseWorldLocation, MouseWorldDirection;
+	float MouseLineTraceLength = 1000.f;;
+	bHitSuccess = PlayerController->DeprojectMousePositionToWorld(MouseWorldLocation, MouseWorldDirection);
+	if (bHitSuccess)
+	{
+		return FMath::LinePlaneIntersection(MouseWorldLocation, MouseWorldLocation + MouseWorldDirection * MouseLineTraceLength, FPlane(GridLocation, FVector::UpVector));
+	}
+	return FVector::ZeroVector;
+}
+
 void AGrid::SetTileCount(FIntPoint Value)
 {
 	SpawnGrid(GridLocation, GridTileSize, Value, GridShape);
@@ -57,6 +79,43 @@ void AGrid::SetTileCount(FIntPoint Value)
 void AGrid::SetTileSize(FVector Value)
 {
 	SpawnGrid(GridLocation, Value, GridTileCount, GridShape);
+}
+
+FIntPoint AGrid::GetTileIndexUnderCursor()
+{
+	FVector Location = GetCursorLocationOnGrid();
+	FIntPoint Index = GetTileIndexFromWorldLocation(Location);
+	return Index;
+}
+
+FIntPoint AGrid::GetTileIndexFromWorldLocation(FVector Location)
+{
+	FVector LocationOnGrid = Location - GetBottomLeftLocation(); // Grid 기준으로부터 상대적인 Location
+	FVector TileIndexWithZ;
+	FIntPoint Index;
+	switch (GridShape)
+	{
+	case EGridShape::Square:
+		TileIndexWithZ = UGridUtility::SnapVectorToVector(LocationOnGrid, GridTileSize) / GridTileSize;
+		Index = FIntPoint(TileIndexWithZ.X, TileIndexWithZ.Y);
+		break;
+	case EGridShape::Hexagon:
+		// 구현 중단
+		break;
+	case EGridShape::Triangle:
+		// 구현 중단
+		break;
+	default:
+		break;
+	}
+	return Index;
+}
+
+bool AGrid::GetTileDataFromIndex(FIntPoint Index, FTileData& Data)
+{
+	if (!GridTiles.Contains(Index)) return false;
+	Data = GridTiles[Index];
+	return true;
 }
 
 void AGrid::SpawnGrid(const FVector& Location, const FVector& TileSize, const FIntPoint& TileCount, EGridShape Shape, bool bAlwaysSpawn)

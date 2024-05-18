@@ -24,8 +24,10 @@ public:
 protected:
 	virtual void NativeConstruct() override;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	class AGrid* Grid;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	class ALevelLoader* LevelLoader;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
