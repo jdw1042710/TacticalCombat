@@ -16,13 +16,21 @@ enum class ETileType :uint8
 	Obstacle,
 };
 
+UENUM(BlueprintType)
+enum class ETileState :uint8
+{
+	None,
+	Hovered,
+	Selected,
+};
+
 USTRUCT(BlueprintType)
 struct FTileData
 {
 	GENERATED_USTRUCT_BODY()
 
 	FTileData(){}
-	FTileData(FIntPoint IndexValue, ETileType TypeValue, FTransform TransformValue);
+	FTileData(FIntPoint IndexValue, ETileType TypeValue, FTransform TransformValue, TArray<ETileState> StateValues = TArray<ETileState>());
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FIntPoint Index;
@@ -32,6 +40,9 @@ struct FTileData
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FTransform Transform;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<ETileState> States;
 };
 
 UCLASS()

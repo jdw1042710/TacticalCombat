@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "TileData.h"
 #include "GridMeshInstance.generated.h"
 
 UCLASS()
@@ -16,7 +17,7 @@ public:
 	AGridMeshInstance();
 
 	void Initialize(UStaticMesh* NewMesh, UMaterialInstance* Material, FLinearColor Color, ECollisionEnabled::Type CollisionType);
-	void AddInstance(FTransform WorldTransform, FIntPoint Index);
+	void AddInstance(FTransform WorldTransform, FIntPoint Index, const TArray<ETileState>& States);
 	void RemoveInstance(FIntPoint Index);
 	void ClearInstances();
 protected:
@@ -28,4 +29,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<FIntPoint> InstanceIndexes;
+
+	UFUNCTION(BlueprintCallable)
+	FLinearColor GetColorFromStates(const TArray<ETileState>& States);
 };

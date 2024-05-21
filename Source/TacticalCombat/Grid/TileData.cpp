@@ -5,10 +5,9 @@
 #include "TileData.h"
 
 
-FTileData::FTileData(FIntPoint IndexValue, ETileType TypeValue, FTransform TransformValue)
-	:Index(IndexValue), Type(TypeValue), Transform(TransformValue)
+FTileData::FTileData(FIntPoint IndexValue, ETileType TypeValue, FTransform TransformValue, TArray<ETileState> StateValues)
+	:Index(IndexValue), Type(TypeValue), Transform(TransformValue), States(StateValues)
 {
-
 }
 
 bool UTileDataUtility::IsTileWalkable(ETileType TileType)

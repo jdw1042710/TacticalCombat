@@ -27,7 +27,7 @@ void AGridVisualizer::Initialize(AGrid* NewGrid)
 	DestroyGridVisual();
 	GridMeshInstance->Initialize(
 		Grid->GetCurrentShapeData().Mesh,
-		Grid->GetCurrentShapeData().FlatBorderMaterial,
+		Grid->GetCurrentShapeData().FlatMaterial,
 		FLinearColor::Black,
 		ECollisionEnabled::QueryOnly);
 }
@@ -37,7 +37,7 @@ void AGridVisualizer::UpdateTileVisual(FTileData Tile)
 	GridMeshInstance->RemoveInstance(Tile.Index);
 	if (UTileDataUtility::IsTileWalkable(Tile.Type)) 
 	{
-		GridMeshInstance->AddInstance(Tile.Transform, Tile.Index);
+		GridMeshInstance->AddInstance(Tile.Transform, Tile.Index, Tile.States);
 	}
 }
 

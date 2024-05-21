@@ -60,15 +60,15 @@ FVector AGrid::GetCursorLocationOnGrid()
 	{
 		return Hit.Location;
 	}
-	// 실패시 임의로 마우스 포인터와 평면간의 교차지점을 반환
-	FVector MouseWorldLocation, MouseWorldDirection;
-	float MouseLineTraceLength = 1000.f;;
-	bHitSuccess = PlayerController->DeprojectMousePositionToWorld(MouseWorldLocation, MouseWorldDirection);
-	if (bHitSuccess)
-	{
-		return FMath::LinePlaneIntersection(MouseWorldLocation, MouseWorldLocation + MouseWorldDirection * MouseLineTraceLength, FPlane(GridLocation, FVector::UpVector));
-	}
-	return FVector::ZeroVector;
+	//// 실패시 임의로 마우스 포인터와 평면간의 교차지점을 반환
+	//FVector MouseWorldLocation, MouseWorldDirection;
+	//float MouseLineTraceLength = 1000.f;;
+	//bHitSuccess = PlayerController->DeprojectMousePositionToWorld(MouseWorldLocation, MouseWorldDirection);
+	//if (bHitSuccess)
+	//{
+	//	return FMath::LinePlaneIntersection(MouseWorldLocation, MouseWorldLocation + MouseWorldDirection * MouseLineTraceLength, FPlane(GridLocation, FVector::UpVector));
+	//}
+	return FVector(-1);
 }
 
 void AGrid::SetTileCount(FIntPoint Value)
@@ -81,6 +81,7 @@ void AGrid::SetTileSize(FVector Value)
 	SpawnGrid(GridLocation, Value, GridTileCount, GridShape);
 }
 
+// 커서 아래에 타일이 없는 경우, (-1, -1)값을 반환
 FIntPoint AGrid::GetTileIndexUnderCursor()
 {
 	FVector Location = GetCursorLocationOnGrid();
@@ -118,6 +119,59 @@ bool AGrid::GetTileDataFromIndex(FIntPoint Index, FTileData& Data)
 	return true;
 }
 
+
+//void PrintStates(FTileData data)
+//{
+//	TArray<ETileState> tset = data.States;
+//	FString log = data.Index.ToString() + FString(" Elements : ");
+//	for (auto element : tset)
+//	{
+//		switch (element)
+//		{
+//		case ETileState::Hovered:
+//			log += FString("Hovered ");
+//			break;
+//		case ETileState::Selected:
+//			log += FString("Selected ");
+//			break;
+//		case ETileState::None:
+//			log += FString("None ");
+//			break;
+//		}
+//	}
+//	UE_LOG(LogTemp, Warning, TEXT("%s"), *log);
+//}
+
+void AGrid::AddStateToTile(FIntPoint Index, ETileState State)
+{
+	
+	FTileData Data;
+	//해당 Index에 대응하는 타일이 존재하지 않는 경우 종료
+	if (!GetTileDataFromIndex(Index, Data)) return;
+
+	// 해당 State가 존재하는 경우 종료
+	if (Data.States.Contains(State)) return;
+	Data.States.AddUnique(State);
+
+	GridTiles[Index] = Data;
+	GridVisualizer->UpdateTileVisual(Data);
+}
+
+
+void AGrid::RemoveStateFromTile(FIntPoint Index, ETileState State)
+{
+	//해당 Index에 대응하는 타일이 존재하지 않는 경우 종료
+	FTileData Data;
+	if (!GetTileDataFromIndex(Index, Data)) return;
+
+	// 해당 State가 존재하지 않는 경우 종료
+	if (!Data.States.Contains(State)) return;
+
+	Data.States.Remove(State);
+	GridTiles[Index] = Data;
+	GridVisualizer->UpdateTileVisual(Data);
+}
+
 void AGrid::SpawnGrid(const FVector& Location, const FVector& TileSize, const FIntPoint& TileCount, EGridShape Shape, bool bAlwaysSpawn)
 {
 	SetActorLocation(Location);
@@ -151,7 +205,8 @@ void AGrid::SpawnGrid(const FVector& Location, const FVector& TileSize, const FI
 			NewTileTransform.SetScale3D(GridTileSize / GridShapeData.Size);
 			if (bAlwaysSpawn)
 			{
-				AddGridTile(FTileData(FIntPoint(X, Y), ETileType::Ground, NewTileTransform));
+				FTileData Data = FTileData(FIntPoint(X, Y), ETileType::Ground, NewTileTransform);
+				AddGridTile(Data);
 			}
 			else 
 			{
@@ -162,7 +217,9 @@ void AGrid::SpawnGrid(const FVector& Location, const FVector& TileSize, const FI
 				FVector TracedLoctation = NewTileTransform.GetLocation();
 				TracedLoctation.Z = FMath::GridSnap<float>(ImpactPoint.Z, GridTileSize.Z) + GridOffset;
 				NewTileTransform.SetLocation(TracedLoctation);
-				AddGridTile(FTileData(FIntPoint(X, Y), TileType, NewTileTransform));			}
+				FTileData Data = FTileData(FIntPoint(X, Y), TileType, NewTileTransform);
+				AddGridTile(Data);
+			}
 		}
 	}
 }
@@ -173,9 +230,9 @@ void AGrid::DestoryGrid()
 	GridVisualizer->DestroyGridVisual();
 }
 
-void AGrid::AddGridTile(FTileData Tile)
+void AGrid::AddGridTile(FTileData& Tile)
 {
-	// UE_LOG(LogTemp, Display, TEXT("%d %d"), Tile.Index.X, Tile.Index.Y);
+	//UE_LOG(LogTemp, Display, TEXT("%d %d"), Tile.Index.X, Tile.Index.Y);
 	GridTiles.Add(Tile.Index, Tile);
 	GridVisualizer->UpdateTileVisual(Tile);
 }

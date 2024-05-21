@@ -13,6 +13,7 @@ AGridMeshInstance::AGridMeshInstance()
 	InstancedMesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
 	InstancedMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	InstancedMesh->SetCollisionResponseToChannel(ECC_GameTraceChannel2, ECollisionResponse::ECR_Block);
+	InstancedMesh->NumCustomDataFloats = 4;
 }
 
 void AGridMeshInstance::Initialize(
@@ -28,12 +29,17 @@ void AGridMeshInstance::Initialize(
 	InstancedMesh->SetCollisionEnabled(CollisionType);
 }
 
-void AGridMeshInstance::AddInstance(FTransform WorldTransform, FIntPoint Index)
+void AGridMeshInstance::AddInstance(FTransform WorldTransform, FIntPoint Index, const TArray<ETileState>& States)
 {
 	// Remove if this index is already used.
 	RemoveInstance(Index);
 	InstancedMesh->AddInstanceWorldSpace(WorldTransform);
-	InstanceIndexes.Add(Index);
+	int32 InstanceIndex = InstanceIndexes.Add(Index);
+	FLinearColor Color = GetColorFromStates(States);
+	InstancedMesh->SetCustomDataValue(InstanceIndex, 0, Color.R);
+	InstancedMesh->SetCustomDataValue(InstanceIndex, 1, Color.G);
+	InstancedMesh->SetCustomDataValue(InstanceIndex, 2, Color.B);
+	InstancedMesh->SetCustomDataValue(InstanceIndex, 3, Color.A); // isFilled
 }
 
 void AGridMeshInstance::RemoveInstance(FIntPoint Index)
@@ -55,6 +61,21 @@ void AGridMeshInstance::BeginPlay()
 {
 	Super::BeginPlay();
 	
+}
+
+FLinearColor AGridMeshInstance::GetColorFromStates(const TArray<ETileState>& States)
+{
+	if (States.Contains(ETileState::Selected)) 
+	{
+		// Orange
+		return FLinearColor(0.8, 0.2, 0, 1);
+	}
+	if (States.Contains(ETileState::Hovered))
+	{
+		// Orange ~ Yellow
+		return FLinearColor(0.8, 0.5, 0.15, 1);
+	}
+	return FLinearColor(0, 0, 0, 0);
 }
 
 

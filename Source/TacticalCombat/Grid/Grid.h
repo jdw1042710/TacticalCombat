@@ -57,6 +57,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool GetTileDataFromIndex(FIntPoint Index, FTileData& Data);
 
+	UFUNCTION(BlueprintCallable)
+	void AddStateToTile(FIntPoint Index, ETileState State);
+
+	UFUNCTION(BlueprintCallable)
+	void RemoveStateFromTile(FIntPoint Index, ETileState State);
+
 	FGridShapeData GetCurrentShapeData() { return GridShapeData; }
 
 protected:
@@ -92,7 +98,7 @@ protected:
 	FGridShapeData GridShapeData;
 	
 	void DestoryGrid();
-	void AddGridTile(FTileData Tile);
+	void AddGridTile(FTileData& Tile);
 	FVector GetGridBottomLeftCornerLocaion();
 	FVector GetSnapGridCenterLocation();
 	FVector GetTileLocationFromGridIndex(int IndexX, int IndexY);

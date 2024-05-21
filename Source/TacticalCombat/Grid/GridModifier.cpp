@@ -26,7 +26,8 @@ void AGridModifier::SetStaticMesh()
 	if (ShapeData == nullptr) return;
 	if (ShapeData->Mesh == nullptr) return;
 	Mesh->SetStaticMesh(ShapeData->Mesh);
-	Mesh->SetMaterial(0, ShapeData->FlatFilledMaterial);
+	Mesh->SetMaterial(0, ShapeData->FlatMaterial);
+	Mesh->SetScalarParameterValueOnMaterials(FName("IsFilled"), 1);
 	FVector Color;
 	switch (Type)
 	{

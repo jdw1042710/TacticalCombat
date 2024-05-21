@@ -34,10 +34,7 @@ struct FGridShapeData : public FTableRowBase
 	UStaticMesh* FlatMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UMaterialInstance* FlatBorderMaterial;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UMaterialInstance* FlatFilledMaterial;
+	UMaterialInstance* FlatMaterial;
 };
 
 UCLASS()
