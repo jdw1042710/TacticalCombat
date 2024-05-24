@@ -4,6 +4,7 @@
 #include "PlayerActions.h"
 #include "Kismet/GameplayStatics.h"
 #include "../Grid/Grid.h"
+#include "Actions/Action_SelectTile.h"
 
 // Sets default values
 APlayerActions::APlayerActions()
@@ -11,27 +12,8 @@ APlayerActions::APlayerActions()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-}
+	SelectTileAction = CreateDefaultSubobject<UAction_SelectTile>(TEXT("SelectTileAction"));
 
-void PrintSet(TSet<ETileState> tset)
-{
-	FString log = FString("Elements : ");
-	for (auto element : tset)
-	{
-		switch (element)
-		{
-		case ETileState::Hovered:
-			log += FString("Hovered ");
-			break;
-		case ETileState::Selected:
-			log += FString("Selected ");
-			break;
-		case ETileState::None:
-			log += FString("None ");
-			break;
-		}
-	}
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *log);
 }
 
 // Called when the game starts or when spawned
@@ -39,17 +21,6 @@ void APlayerActions::BeginPlay()
 {
 	SetupPlayerInputComponent();
 	FindGrid();
-
-	//TSet<ETileState> tset;
-	//PrintSet(tset);
-	//tset.Add(ETileState::Hovered);
-	//PrintSet(tset);
-
-	//tset.Add(ETileState::Selected);
-	//PrintSet(tset);
-	//tset.Remove(ETileState::Hovered);
-	//PrintSet(tset);
-
 
 	Super::BeginPlay();
 }
@@ -92,15 +63,17 @@ void APlayerActions::UpdateTileUnderCursor()
 
 	Grid->AddStateToTile(HoveredTileIndex, ETileState::Hovered);
 }
-
 void APlayerActions::SelectTile()
 {
-	Grid->AddStateToTile(HoveredTileIndex, ETileState::Selected);
+	if (!bSelectTileActionFlag) return;
+	UpdateTileUnderCursor();
+	SelectTileAction->ExecuteAction(HoveredTileIndex);
 }
-
 void APlayerActions::DeselectTile()
 {
-	Grid->RemoveStateFromTile(HoveredTileIndex, ETileState::Selected);
+	if (!bSelectTileActionFlag) return;
+	UpdateTileUnderCursor();
+	SelectTileAction->ExecuteAction(HoveredTileIndex);
 }
 
 // Called every frame

@@ -19,7 +19,13 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	inline AGrid* GetGrid() { return Grid; };
 
+	inline FIntPoint GetSelectedTile() { return SelectedTileIndex; };
+
+	inline void SetSelectedTile(FIntPoint SelectedIndex) { SelectedTileIndex = SelectedIndex; };
+
+	inline void SetSelectedTileFlag(bool bFlag) { bSelectTileActionFlag = bFlag; };
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -29,10 +35,18 @@ protected:
 
 	AGrid* Grid;
 
+	UPROPERTY()
+	class UAction* SelectTileAction;
+
+	bool bSelectTileActionFlag = false;
+
 	void FindGrid();
 
 	UPROPERTY(VisibleAnywhere)
 	FIntPoint HoveredTileIndex;
+
+	UPROPERTY(VisibleAnywhere)
+	FIntPoint SelectedTileIndex;
 
 	UFUNCTION(BlueprintCallable)
 	void UpdateTileUnderCursor();
