@@ -6,7 +6,10 @@
 #include "GameFramework/Actor.h"
 #include "PlayerActions.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSelectedTileFlagChanged);
+
 class AGrid;
+
 UCLASS()
 class TACTICALCOMBAT_API APlayerActions : public AActor
 {
@@ -25,7 +28,15 @@ public:
 
 	inline void SetSelectedTile(FIntPoint SelectedIndex) { SelectedTileIndex = SelectedIndex; };
 
-	inline void SetSelectedTileFlag(bool bFlag) { bSelectTileActionFlag = bFlag; };
+	UFUNCTION(BlueprintCallable)
+	bool GetSelectedTileFlag() const { return bSelectTileActionFlag; };
+
+	UFUNCTION(BlueprintCallable)
+	void SetSelectedTileFlag(bool bFlag);
+
+	UPROPERTY(BlueprintAssignable)
+	FOnSelectedTileFlagChanged OnSelectedTileFlagChanged;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

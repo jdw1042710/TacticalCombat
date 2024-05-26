@@ -16,6 +16,18 @@ APlayerActions::APlayerActions()
 
 }
 
+void APlayerActions::SetSelectedTileFlag(bool bFlag)
+{
+	bSelectTileActionFlag = bFlag;
+	// If disable select tile mode
+	if (!bSelectTileActionFlag)
+	{
+		// Remove selected tile
+		SelectTileAction->ExecuteAction(FIntPoint(-1, -1));
+	}
+	OnSelectedTileFlagChanged.Broadcast();
+}
+
 // Called when the game starts or when spawned
 void APlayerActions::BeginPlay()
 {
