@@ -4,28 +4,57 @@
 #include "PlayerActions.h"
 #include "Kismet/GameplayStatics.h"
 #include "../Grid/Grid.h"
-#include "Actions/Action_SelectTile.h"
+#include "Actions/Grid/Action_SelectTile.h"
 
 // Sets default values
 APlayerActions::APlayerActions()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
-	SelectTileAction = CreateDefaultSubobject<UAction_SelectTile>(TEXT("SelectTileAction"));
-
 }
 
-void APlayerActions::SetSelectedTileFlag(bool bFlag)
+void APlayerActions::SetMouseAction(TSubclassOf<UAction> LeftClickActionClass, TSubclassOf<UAction> RightClickActionClass)
 {
-	bSelectTileActionFlag = bFlag;
-	// If disable select tile mode
-	if (!bSelectTileActionFlag)
+	// Left Click Action 등록
+	if (MouseLeftClickAction != nullptr)
 	{
-		// Remove selected tile
-		SelectTileAction->ExecuteAction(FIntPoint(-1, -1));
+		MouseLeftClickAction->DestroyComponent();
 	}
+
+	MouseLeftClickAction = Cast<UAction>(
+		AddComponentByClass(
+			LeftClickActionClass,
+			false,
+			FTransform::Identity,
+			false)
+	);
+
+	// Right Click Action 등록
+	if (MouseRightClickAction != nullptr)
+	{
+		MouseRightClickAction->DestroyComponent();
+	}
+
+	MouseRightClickAction = Cast<UAction>(
+		AddComponentByClass(
+			RightClickActionClass,
+			false,
+			FTransform::Identity,
+			false)
+	);
+	
 	OnSelectedTileFlagChanged.Broadcast();
+}
+
+bool APlayerActions::IsMouseActionSet(TSubclassOf<UAction> MouseAction) const
+{
+	bool bIsLeftClickMouseActionSet =
+		(MouseLeftClickAction != nullptr)
+		&& (MouseAction == MouseLeftClickAction->GetClass());
+	bool bIsRightClickMouseActionSet =
+		(MouseRightClickAction != nullptr)
+		&& (MouseAction == MouseRightClickAction->GetClass());
+	return bIsLeftClickMouseActionSet || bIsRightClickMouseActionSet;
 }
 
 // Called when the game starts or when spawned
@@ -37,6 +66,7 @@ void APlayerActions::BeginPlay()
 	Super::BeginPlay();
 }
 
+// APlayerActions 객체 생성시에 World상의 Grid객체를 찾는 함수
 void APlayerActions::FindGrid()
 {
 	TArray<AActor*> Actors;
@@ -55,7 +85,7 @@ void APlayerActions::FindGrid()
 	}
 }
 
-
+// 매 프레임마다 APlayerActions 객체의 상태 변수들을 갱신하는 함수
 void APlayerActions::UpdateTileUnderCursor()
 {
 	if (Grid == nullptr)
@@ -74,18 +104,59 @@ void APlayerActions::UpdateTileUnderCursor()
 	if (HoveredTileIndex == FIntPoint(-1, -1)) return;
 
 	Grid->AddStateToTile(HoveredTileIndex, ETileState::Hovered);
+
+	//버튼 홀드시의 Action을 처리
+	OnHoveredTileChanged();
 }
-void APlayerActions::SelectTile()
+
+// 마우스 좌클릭시 호출되는 함수
+void APlayerActions::MouseLeftClick()
 {
-	if (!bSelectTileActionFlag) return;
-	UpdateTileUnderCursor();
-	SelectTileAction->ExecuteAction(HoveredTileIndex);
+	bIsLeftClickDown = true;
+	ExecuteMouseLeftClickAction();
 }
-void APlayerActions::DeselectTile()
+
+void APlayerActions::ExecuteMouseLeftClickAction()
 {
-	if (!bSelectTileActionFlag) return;
+	if (MouseLeftClickAction == nullptr) return;
 	UpdateTileUnderCursor();
-	SelectTileAction->ExecuteAction(HoveredTileIndex);
+	MouseLeftClickAction->ExecuteAction(HoveredTileIndex);
+}
+
+void APlayerActions::StopMouseLeftClick()
+{
+	bIsLeftClickDown = false;
+}
+
+// 마우스 우클릭시 호출되는 함수
+void APlayerActions::MouseRightClick()
+{
+	bIsRightClickDown = true;
+	ExecuteMouseRightClickAction();
+}
+
+void APlayerActions::ExecuteMouseRightClickAction()
+{
+	if (MouseRightClickAction == nullptr) return;
+	UpdateTileUnderCursor();
+	MouseRightClickAction->ExecuteAction(HoveredTileIndex);
+}
+
+void APlayerActions::StopMouseRightClick()
+{
+	bIsRightClickDown = false;
+}
+
+void APlayerActions::OnHoveredTileChanged()
+{
+	if (bIsLeftClickDown)
+	{
+		ExecuteMouseLeftClickAction();
+	}
+	if (bIsRightClickDown)
+	{
+		ExecuteMouseRightClickAction();
+	}
 }
 
 // Called every frame
@@ -95,6 +166,8 @@ void APlayerActions::Tick(float DeltaTime)
 	UpdateTileUnderCursor();
 }
 
+
+// 입력 함수 Bind
 void APlayerActions::SetupPlayerInputComponent()
 {
 	EnableInput(GetWorld()->GetFirstPlayerController());
@@ -105,14 +178,29 @@ void APlayerActions::SetupPlayerInputComponent()
 			"Select",
 			IE_Pressed,
 			this,
-			&APlayerActions::SelectTile
+			&APlayerActions::MouseLeftClick
 		);
+		InputComponent->BindAction
+		(
+			"Select",
+			IE_Released,
+			this,
+			&APlayerActions::StopMouseLeftClick
+		);
+
 		InputComponent->BindAction
 		(
 			"Deselect",
 			IE_Pressed,
 			this,
-			&APlayerActions::DeselectTile
+			&APlayerActions::MouseRightClick
+		);
+		InputComponent->BindAction
+		(
+			"Deselect",
+			IE_Released,
+			this,
+			&APlayerActions::StopMouseRightClick
 		);
 	}
 }

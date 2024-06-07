@@ -2,8 +2,8 @@
 
 
 #include "Action_SelectTile.h"
-#include "../PlayerActions.h"
-#include "../../Grid/Grid.h"
+#include "../../PlayerActions.h"
+#include "../../../Grid/Grid.h"
 
 void UAction_SelectTile::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
@@ -35,4 +35,11 @@ void UAction_SelectTile::ExecuteAction(FIntPoint Index)
 void UAction_SelectTile::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void UAction_SelectTile::DestroyComponent(bool bPromoteChildren)
+{
+	// Destroy Selected Tile
+	ExecuteAction(FIntPoint(-1, -1));
+	Super::DestroyComponent(bPromoteChildren);
 }

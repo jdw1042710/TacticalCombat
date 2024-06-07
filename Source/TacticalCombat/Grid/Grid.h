@@ -27,6 +27,12 @@ public:
 	void SpawnGrid(const FVector& Location, const FVector& TileSize, const FIntPoint& TileCount, EGridShape Shape, bool bAlwaysSpawn = false);
 
 	UFUNCTION(BlueprintCallable)
+	void AddGridTile(const FTileData& Tile);
+
+	UFUNCTION(BlueprintCallable)
+	void RemoveGridTile(const FIntPoint& Index);
+
+	UFUNCTION(BlueprintCallable)
 	void SetLocation(FVector Value);
 	UFUNCTION(BlueprintCallable)
 	FVector GetLocation() { return GetActorLocation(); }
@@ -38,7 +44,12 @@ public:
 	FVector GetCenterLocation() { return GetSnapGridCenterLocation(); }
 	UFUNCTION(BlueprintCallable)
 	FVector GetBottomLeftLocation() { return GetGridBottomLeftCornerLocaion(); }
-
+	UFUNCTION(BlueprintCallable)
+	FVector GetTileLocationFromGridIndex(FIntPoint Index);
+	UFUNCTION(BlueprintCallable)
+	FQuat GetTileRotationFromGridIndex(FIntPoint Index);
+	UFUNCTION(BlueprintCallable)
+	FVector GetTileScale();
 	UFUNCTION(BlueprintCallable)
 	FVector GetCursorLocationOnGrid();
 	UFUNCTION(BlueprintCallable)
@@ -49,13 +60,20 @@ public:
 	void SetTileSize(FVector Value);
 	UFUNCTION(BlueprintCallable)
 	FVector GetTileSize() { return GridTileSize; }
+
+	//Tile Index 및 Data 관련 함수들
 	UFUNCTION(BlueprintCallable)
 	FIntPoint GetTileIndexUnderCursor();
 	UFUNCTION(BlueprintCallable)
 	FIntPoint GetTileIndexFromWorldLocation(FVector Location);
-
 	UFUNCTION(BlueprintCallable)
 	bool GetTileDataFromIndex(FIntPoint Index, FTileData& Data);
+
+	UFUNCTION(BlueprintCallable)
+	bool TraceForGround(FVector TraceLocation, FVector& OutLocation, ETileType& TileType);
+
+	UFUNCTION(BlueprintCallable)
+	bool IsIndexValid(FIntPoint Index);
 
 	UFUNCTION(BlueprintCallable)
 	void AddStateToTile(FIntPoint Index, ETileState State);
@@ -98,13 +116,12 @@ protected:
 	FGridShapeData GridShapeData;
 	
 	void DestoryGrid();
-	void AddGridTile(FTileData& Tile);
+
 	FVector GetGridBottomLeftCornerLocaion();
 	FVector GetSnapGridCenterLocation();
-	FVector GetTileLocationFromGridIndex(int IndexX, int IndexY);
-	FQuat GetTileRotationFromGridIndex(int IndexX, int IndexY);
+
 	bool TryUpdateInstancedMeshByCurrentShape();
-	bool TraceForGround(FVector TraceLocation, float Range, FVector& OutLocation, ETileType& TileType);
+
 	FVector GetLocationFromHits(const TArray<FHitResult>& Hits, ETileType& TileType);
 	
 };

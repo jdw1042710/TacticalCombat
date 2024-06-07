@@ -33,6 +33,8 @@ void AGridMeshInstance::AddInstance(FTransform WorldTransform, FIntPoint Index, 
 {
 	// Remove if this index is already used.
 	RemoveInstance(Index);
+	// Add Z Position + 1 For Visual
+	WorldTransform.SetLocation(WorldTransform.GetLocation() + FVector::UpVector);
 	InstancedMesh->AddInstanceWorldSpace(WorldTransform);
 	int32 InstanceIndex = InstanceIndexes.Add(Index);
 	FLinearColor Color = GetColorFromStates(States);

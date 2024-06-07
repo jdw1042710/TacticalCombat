@@ -21,6 +21,16 @@ void UAction::BeginPlay()
 	{
 		UE_LOG(LogTemp, Error, TEXT("Action Component는 PlayerActions Actor에서만 동작합니다."));
 	}
+
+	// To Show Component In Editor
+	GetOwner()->AddInstanceComponent(this);
+}
+
+void UAction::DestroyComponent(bool bPromoteChildren)
+{
+	// To Hide(=Remove) Component In Editor
+	GetOwner()->RemoveInstanceComponent(this);
+	Super::DestroyComponent(bPromoteChildren);
 }
 
 void UAction::ExecuteAction(FIntPoint Index)

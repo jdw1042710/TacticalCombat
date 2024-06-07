@@ -28,11 +28,11 @@ public:
 
 	inline void SetSelectedTile(FIntPoint SelectedIndex) { SelectedTileIndex = SelectedIndex; };
 
-	UFUNCTION(BlueprintCallable)
-	bool GetSelectedTileFlag() const { return bSelectTileActionFlag; };
 
 	UFUNCTION(BlueprintCallable)
-	void SetSelectedTileFlag(bool bFlag);
+	void SetMouseAction(TSubclassOf<UAction> LeftClickAction, TSubclassOf<UAction> RightClickAction);
+	UFUNCTION(BlueprintCallable)
+	bool IsMouseActionSet(TSubclassOf<UAction> MouseAction) const;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnSelectedTileFlagChanged OnSelectedTileFlagChanged;
@@ -46,10 +46,16 @@ protected:
 
 	AGrid* Grid;
 
-	UPROPERTY()
-	class UAction* SelectTileAction;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Actions")
+	class UAction* MouseLeftClickAction;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Actions")
+	class UAction* MouseRightClickAction;
 
-	bool bSelectTileActionFlag = false;
+	UPROPERTY(VisibleAnywhere)
+	bool bIsLeftClickDown = false;
+
+	UPROPERTY(VisibleAnywhere)
+	bool bIsRightClickDown = false;
 
 	void FindGrid();
 
@@ -63,8 +69,23 @@ protected:
 	void UpdateTileUnderCursor();
 
 	UFUNCTION(BlueprintCallable)
-	void SelectTile();
+	void MouseLeftClick();
 
 	UFUNCTION(BlueprintCallable)
-	void DeselectTile();
+	void ExecuteMouseLeftClickAction();
+
+	UFUNCTION(BlueprintCallable)
+	void StopMouseLeftClick();
+
+	UFUNCTION(BlueprintCallable)
+	void MouseRightClick();
+
+	UFUNCTION(BlueprintCallable)
+	void ExecuteMouseRightClickAction();
+
+	UFUNCTION(BlueprintCallable)
+	void StopMouseRightClick();
+
+	UFUNCTION()
+	void OnHoveredTileChanged();
 };

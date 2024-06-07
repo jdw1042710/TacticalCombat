@@ -53,21 +53,29 @@ FVector AGrid::GetCursorLocationOnGrid()
 {
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 	FHitResult Hit;
-	// Line Trace가 성공하면 해당 값을 반환
+	// Line Trace가 성공하면 해당 값을 반환 (Grid Channel)
 	bool bHitSuccess;
 	bHitSuccess = PlayerController->GetHitResultUnderCursor(ECollisionChannel::ECC_GameTraceChannel2, false, Hit);
 	if (bHitSuccess)
 	{
+		// UE_LOG(LogTemp, Display, TEXT("1 : %s"), *Hit.Location.ToString());
+		return Hit.Location;
+	}
+	// Line Trace가 성공하면 해당 값을 반환 (GoundAndModifier Channel)
+	bHitSuccess = PlayerController->GetHitResultUnderCursor(ECollisionChannel::ECC_GameTraceChannel1, false, Hit);
+	if (bHitSuccess)
+	{
+		// UE_LOG(LogTemp, Display, TEXT("2 : %s"), *Hit.Location.ToString());
 		return Hit.Location;
 	}
 	//// 실패시 임의로 마우스 포인터와 평면간의 교차지점을 반환
-	//FVector MouseWorldLocation, MouseWorldDirection;
-	//float MouseLineTraceLength = 1000.f;;
-	//bHitSuccess = PlayerController->DeprojectMousePositionToWorld(MouseWorldLocation, MouseWorldDirection);
-	//if (bHitSuccess)
-	//{
-	//	return FMath::LinePlaneIntersection(MouseWorldLocation, MouseWorldLocation + MouseWorldDirection * MouseLineTraceLength, FPlane(GridLocation, FVector::UpVector));
-	//}
+	FVector MouseWorldLocation, MouseWorldDirection;
+	float MouseLineTraceLength = 1000.f;;
+	bHitSuccess = PlayerController->DeprojectMousePositionToWorld(MouseWorldLocation, MouseWorldDirection);
+	if (bHitSuccess)
+	{
+		return FMath::LinePlaneIntersection(MouseWorldLocation, MouseWorldLocation + MouseWorldDirection * MouseLineTraceLength, FPlane(GridLocation, FVector::UpVector));
+	}
 	return FVector(-1);
 }
 
@@ -114,9 +122,14 @@ FIntPoint AGrid::GetTileIndexFromWorldLocation(FVector Location)
 
 bool AGrid::GetTileDataFromIndex(FIntPoint Index, FTileData& Data)
 {
-	if (!GridTiles.Contains(Index)) return false;
+	if (!IsIndexValid(Index)) return false;
 	Data = GridTiles[Index];
 	return true;
+}
+
+bool AGrid::IsIndexValid(FIntPoint Index)
+{
+	return GridTiles.Contains(Index);
 }
 
 
@@ -199,10 +212,13 @@ void AGrid::SpawnGrid(const FVector& Location, const FVector& TileSize, const FI
 	{
 		for (int Y = 0; Y < TileCount.Y; Y++)
 		{
-			FTransform NewTileTransform;
-			NewTileTransform.SetLocation(GetTileLocationFromGridIndex(X, Y));
-			NewTileTransform.SetRotation(GetTileRotationFromGridIndex(X, Y));
-			NewTileTransform.SetScale3D(GridTileSize / GridShapeData.Size);
+			FIntPoint Index(X, Y);
+			FTransform NewTileTransform
+			(
+				GetTileRotationFromGridIndex(Index),
+				GetTileLocationFromGridIndex(Index),
+				GetTileScale()
+			);
 			if (bAlwaysSpawn)
 			{
 				FTileData Data = FTileData(FIntPoint(X, Y), ETileType::Ground, NewTileTransform);
@@ -213,9 +229,9 @@ void AGrid::SpawnGrid(const FVector& Location, const FVector& TileSize, const FI
 				// Add Tile By Trace Result
 				FVector ImpactPoint;
 				ETileType TileType = ETileType::None;
-				TraceForGround(NewTileTransform.GetLocation(), 500.0f, ImpactPoint, TileType);
+				TraceForGround(NewTileTransform.GetLocation(), ImpactPoint, TileType);
 				FVector TracedLoctation = NewTileTransform.GetLocation();
-				TracedLoctation.Z = FMath::GridSnap<float>(ImpactPoint.Z, GridTileSize.Z) + GridOffset;
+				TracedLoctation.Z = FMath::GridSnap<float>(ImpactPoint.Z, GridTileSize.Z);
 				NewTileTransform.SetLocation(TracedLoctation);
 				FTileData Data = FTileData(FIntPoint(X, Y), TileType, NewTileTransform);
 				AddGridTile(Data);
@@ -230,11 +246,22 @@ void AGrid::DestoryGrid()
 	GridVisualizer->DestroyGridVisual();
 }
 
-void AGrid::AddGridTile(FTileData& Tile)
+void AGrid::AddGridTile(const FTileData& Tile)
 {
-	//UE_LOG(LogTemp, Display, TEXT("%d %d"), Tile.Index.X, Tile.Index.Y);
 	GridTiles.Add(Tile.Index, Tile);
 	GridVisualizer->UpdateTileVisual(Tile);
+}
+
+void AGrid::RemoveGridTile(const FIntPoint& Index)
+{
+	GridTiles.Remove(Index);
+	GridVisualizer->UpdateTileVisual(
+		FTileData(
+			Index,
+			ETileType::None,
+			FTransform::Identity
+		)
+	);
 }
 
 FVector AGrid::GetGridBottomLeftCornerLocaion()
@@ -286,33 +313,32 @@ FVector AGrid::GetSnapGridCenterLocation()
 	return UGridUtility::SnapVectorToVector(GridLocation, GridTileSize * Multiplier);
 }
 
-FVector AGrid::GetTileLocationFromGridIndex(int IndexX, int IndexY)
+FVector AGrid::GetTileLocationFromGridIndex(FIntPoint Index)
 {
-	FVector2D Index(IndexX, IndexY);
 	FVector2D Multiplier(1, 1);
 	FVector Offset(0);
 	switch (GridShape)
 	{
 	case EGridShape::Hexagon:
 		Multiplier = FVector2D(0.75, 1);
-		Offset = FVector(0, UGridUtility::IsEven(IndexX) ? 0 : GridTileSize.Y * 0.5, 0);
+		Offset = FVector(0, UGridUtility::IsEven(Index.X) ? 0 : GridTileSize.Y * 0.5, 0);
 		break;
 	case EGridShape::Triangle:
 		Multiplier = FVector2D(1, 0.5);
 		break;
 	}
 	return 	GetGridBottomLeftCornerLocaion()
-		+ GridTileSize * FVector(Index * Multiplier, 0)
+		+ GridTileSize * FVector(FVector2D(Index) * Multiplier, 0)
 		+ Offset // For Hexagon
 		+ FVector::UpVector * GridOffset;
 }
 
-FQuat AGrid::GetTileRotationFromGridIndex(int IndexX, int IndexY)
+FQuat AGrid::GetTileRotationFromGridIndex(FIntPoint Index)
 {
 	FQuat TileRotation = FQuat::Identity;
 	if (GridShape == EGridShape::Triangle)
 	{
-		float Yaw = (UGridUtility::IsEven(IndexX) ? 180 : 0) + (UGridUtility::IsEven(IndexY)? 180 : 0);
+		float Yaw = (UGridUtility::IsEven(Index.X) ? 180 : 0) + (UGridUtility::IsEven(Index.Y)? 180 : 0);
 		TileRotation = FRotator(
 			0, 
 			Yaw,
@@ -320,6 +346,11 @@ FQuat AGrid::GetTileRotationFromGridIndex(int IndexX, int IndexY)
 			.Quaternion();
 	}
 	return TileRotation;
+}
+
+FVector AGrid::GetTileScale()
+{
+	return GridTileSize / GridShapeData.Size;
 }
 
 bool AGrid::TryUpdateInstancedMeshByCurrentShape()
@@ -332,9 +363,10 @@ bool AGrid::TryUpdateInstancedMeshByCurrentShape()
 	return true;
 }
 
-bool AGrid::TraceForGround(FVector TraceLocation, float Range, FVector& OutLocation, ETileType& TileType)
+bool AGrid::TraceForGround(FVector TraceLocation, FVector& OutLocation, ETileType& TileType)
 {
 	TArray<FHitResult> Hits;
+	const float Range = 500.f;
 	FVector RangeVecter = FVector::UpVector * Range;
 	float Radius = GridTileSize.X / (GridShape == EGridShape::Triangle ? 5 : 3);
 	FCollisionShape CollisionShape = FCollisionShape::MakeSphere(Radius);
