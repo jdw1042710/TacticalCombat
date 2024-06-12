@@ -28,6 +28,11 @@ void UDebugMenu::NativeConstruct()
 	{
 		Button_Tab3->OnClicked.AddDynamic(this, &UDebugMenu::OnclickButtonTab3);
 	}
+	Buttons.Add(Button_Tab4);
+	if (Button_Tab4 != nullptr)
+	{
+		Button_Tab4->OnClicked.AddDynamic(this, &UDebugMenu::OnclickButtonTab4);
+	}
 	UpdateButtonsColor();
 }
 
@@ -60,4 +65,9 @@ void UDebugMenu::OnclickButtonTab2()
 void UDebugMenu::OnclickButtonTab3()
 {
 	OnClickButtonTab(3);
+}
+
+void UDebugMenu::OnclickButtonTab4()
+{
+	OnClickButtonTab(4);
 }

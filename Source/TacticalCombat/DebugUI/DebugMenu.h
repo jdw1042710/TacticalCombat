@@ -31,6 +31,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	class UButton* Button_Tab3;
 
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	class UButton* Button_Tab4;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FLinearColor DefaultColor = FLinearColor(0x66, 0x66, 0x66, 0xff);
 
@@ -50,5 +53,7 @@ protected:
 	void OnclickButtonTab2();
 	UFUNCTION()
 	void OnclickButtonTab3();
+	UFUNCTION()
+	void OnclickButtonTab4();
 
 };

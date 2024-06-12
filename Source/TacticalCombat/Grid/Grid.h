@@ -9,6 +9,10 @@
 #include "Grid.generated.h"
 
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTileDataUpdated, FIntPoint, Index);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnGridDestroyed);
+
 class AGridVisualizer;
 UCLASS()
 class TACTICALCOMBAT_API AGrid : public AActor
@@ -68,6 +72,9 @@ public:
 	FIntPoint GetTileIndexFromWorldLocation(FVector Location);
 	UFUNCTION(BlueprintCallable)
 	bool GetTileDataFromIndex(FIntPoint Index, FTileData& Data);
+	
+	UFUNCTION(BlueprintCallable)
+	TArray<FIntPoint> GetAllIndexesFromTileData();
 
 	UFUNCTION(BlueprintCallable)
 	bool TraceForGround(FVector TraceLocation, FVector& OutLocation, ETileType& TileType);
@@ -83,6 +90,11 @@ public:
 
 	FGridShapeData GetCurrentShapeData() { return GridShapeData; }
 
+	UPROPERTY(BlueprintAssignable)
+	FOnTileDataUpdated OnTileDataUpdated;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnGridDestroyed OnGridDestroyed;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

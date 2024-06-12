@@ -168,6 +168,7 @@ void AGrid::AddStateToTile(FIntPoint Index, ETileState State)
 
 	GridTiles[Index] = Data;
 	GridVisualizer->UpdateTileVisual(Data);
+	OnTileDataUpdated.Broadcast(Index);
 }
 
 
@@ -244,12 +245,14 @@ void AGrid::DestoryGrid()
 {
 	GridTiles.Empty();
 	GridVisualizer->DestroyGridVisual();
+	OnGridDestroyed.Broadcast();
 }
 
 void AGrid::AddGridTile(const FTileData& Tile)
 {
 	GridTiles.Add(Tile.Index, Tile);
 	GridVisualizer->UpdateTileVisual(Tile);
+	OnTileDataUpdated.Broadcast(Tile.Index);
 }
 
 void AGrid::RemoveGridTile(const FIntPoint& Index)
@@ -262,6 +265,7 @@ void AGrid::RemoveGridTile(const FIntPoint& Index)
 			FTransform::Identity
 		)
 	);
+	OnTileDataUpdated.Broadcast(Index);
 }
 
 FVector AGrid::GetGridBottomLeftCornerLocaion()
@@ -384,6 +388,13 @@ bool AGrid::TraceForGround(FVector TraceLocation, FVector& OutLocation, ETileTyp
 		OutLocation = GetLocationFromHits(Hits, TileType);
 	}
 	return Hits.Num() > 0;
+}
+
+TArray<FIntPoint> AGrid::GetAllIndexesFromTileData()
+{
+	TArray<FIntPoint> Result;
+	GridTiles.GenerateKeyArray(Result);
+	return Result;
 }
 
 FVector AGrid::GetLocationFromHits(const TArray<FHitResult>& Hits, ETileType& TileType)
