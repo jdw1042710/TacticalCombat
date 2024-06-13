@@ -65,6 +65,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FVector GetTileSize() { return GridTileSize; }
 
+	UFUNCTION(BlueprintCallable)
+	UGridPathfinding* GetGridPathfinding() { return GridPathfinding; }
+
 	//Tile Index 및 Data 관련 함수들
 	UFUNCTION(BlueprintCallable)
 	FIntPoint GetTileIndexUnderCursor();
@@ -82,12 +85,21 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool IsIndexValid(FIntPoint Index);
 
+
+	// State 관련 함수들
 	UFUNCTION(BlueprintCallable)
 	void AddStateToTile(FIntPoint Index, ETileState State);
 
 	UFUNCTION(BlueprintCallable)
 	void RemoveStateFromTile(FIntPoint Index, ETileState State);
 
+	UFUNCTION(BlueprintCallable)
+	TArray<FIntPoint> GetAllTilesWithStates(ETileState State);
+
+	UFUNCTION(BlueprintCallable)
+	void ClearStateFromTiles(ETileState State);
+
+	EGridShape GetGridShape() { return GridShape; }
 	FGridShapeData GetCurrentShapeData() { return GridShapeData; }
 
 	UPROPERTY(BlueprintAssignable)
@@ -95,6 +107,7 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnGridDestroyed OnGridDestroyed;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -108,6 +121,10 @@ protected:
 	// GridVisualizer
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	AGridVisualizer* GridVisualizer;
+
+	//Pathfinding
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	class UGridPathfinding* GridPathfinding;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FVector GridLocation = FVector::ZeroVector;

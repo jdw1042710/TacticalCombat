@@ -4,6 +4,7 @@
 #include "Grid.h"
 #include "GridVisualizer.h"
 #include "GridModifier.h"
+#include "GridPathfinding.h"
 #include "GridUtility.h"
 #include "DrawDebugHelpers.h"
 
@@ -12,6 +13,7 @@ AGrid::AGrid()
 {
 	ChildActor = CreateDefaultSubobject<UChildActorComponent>(TEXT("ChildActor_GridVisualizer"));
 	ChildActor -> SetChildActorClass(AGridVisualizer::StaticClass());
+	GridPathfinding = CreateDefaultSubobject<UGridPathfinding>(TEXT("GridPathfinding"));
 }
 
 // Called when the game starts or when spawned
@@ -185,6 +187,31 @@ void AGrid::RemoveStateFromTile(FIntPoint Index, ETileState State)
 	GridTiles[Index] = Data;
 	GridVisualizer->UpdateTileVisual(Data);
 }
+
+TArray<FIntPoint> AGrid::GetAllTilesWithStates(ETileState State)
+{
+	TArray<FIntPoint> Indexes;
+	TArray<FTileData> Tiles;
+	GridTiles.GenerateValueArray(Tiles);
+	for (auto Tile : Tiles)
+	{
+		if (Tile.States.Contains(State))
+		{
+			Indexes.Add(Tile.Index);
+		}
+	}
+	return Indexes;
+}
+
+void AGrid::ClearStateFromTiles(ETileState State)
+{
+	TArray<FIntPoint> Indexes = GetAllTilesWithStates(State);
+	for (auto Index : Indexes)
+	{
+		RemoveStateFromTile(Index, State);
+	}
+}
+
 
 void AGrid::SpawnGrid(const FVector& Location, const FVector& TileSize, const FIntPoint& TileCount, EGridShape Shape, bool bAlwaysSpawn)
 {

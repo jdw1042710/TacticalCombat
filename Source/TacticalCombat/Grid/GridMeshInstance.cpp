@@ -67,15 +67,20 @@ void AGridMeshInstance::BeginPlay()
 
 FLinearColor AGridMeshInstance::GetColorFromStates(const TArray<ETileState>& States)
 {
-	if (States.Contains(ETileState::Selected)) 
+	for (auto State : States) 
 	{
-		// Orange
-		return FLinearColor(0.8, 0.2, 0, 1);
-	}
-	if (States.Contains(ETileState::Hovered))
-	{
-		// Orange ~ Yellow
-		return FLinearColor(0.8, 0.5, 0.15, 1);
+		switch (State)
+		{
+		case ETileState::Selected:
+			// Orange
+			return FLinearColor(0.8, 0.2, 0, 1);
+		case ETileState::Hovered:
+			// Orange ~ Yellow
+			return FLinearColor(0.8, 0.5, 0.15, 1);
+		case ETileState::Neighbor:
+			//Pink
+			return FLinearColor(1, 0.75, 0.79, 1);
+		}
 	}
 	return FLinearColor(0, 0, 0, 0);
 }
