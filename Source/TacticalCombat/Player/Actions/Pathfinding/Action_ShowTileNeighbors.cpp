@@ -30,7 +30,7 @@ void UAction_ShowTileNeighbors::ExecuteAction(FIntPoint Index)
 	if (Grid->IsIndexValid(Index)) 
 	{
 		Grid->ClearStateFromTiles(ETileState::Neighbor);
-		TArray<FIntPoint> Neighbors = GridPathfinding->GetValidTileNeighbors(HoveredIndex);
+		TArray<FIntPoint> Neighbors = GridPathfinding->GetValidTileNeighbors(HoveredIndex, bIncludeDiagonals);
 		for (auto Neighbor : Neighbors)
 		{
 			Grid->AddStateToTile(Neighbor, ETileState::Neighbor);

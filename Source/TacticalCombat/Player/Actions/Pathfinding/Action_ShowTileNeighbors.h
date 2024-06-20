@@ -21,7 +21,13 @@ public:
 	virtual void ExecuteAction(FIntPoint Index) override;
 
 	virtual void DestroyComponent(bool bPromoteChildren = false) override;
+
+	UFUNCTION(BlueprintCallable)
+	void SetIncludeDiagonals(bool flag) { bIncludeDiagonals = flag; }
+	UFUNCTION(BlueprintCallable)
+	bool GetIncludeDiagonals() { return bIncludeDiagonals; }
 protected:
+	bool bIncludeDiagonals = false;
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
