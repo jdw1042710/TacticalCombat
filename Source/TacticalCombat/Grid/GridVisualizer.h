@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "TileData.h"
+#include "Utilities/TileData.h"
 #include "GridVisualizer.generated.h"
 
 class AGrid;

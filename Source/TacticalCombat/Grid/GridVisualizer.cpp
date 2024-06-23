@@ -2,7 +2,7 @@
 
 
 #include "GridVisualizer.h"
-#include "GridMeshInstance.h"
+#include "Utilities/GridMeshInstance.h"
 #include "Grid.h"
 
 

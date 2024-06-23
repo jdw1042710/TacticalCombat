@@ -5,7 +5,7 @@
 #include "GridVisualizer.h"
 #include "GridModifier.h"
 #include "GridPathfinding.h"
-#include "GridUtility.h"
+#include "Utilities/GridUtility.h"
 #include "DrawDebugHelpers.h"
 
 // Sets default values
@@ -127,6 +127,13 @@ bool AGrid::GetTileDataFromIndex(FIntPoint Index, FTileData& Data)
 	if (!IsIndexValid(Index)) return false;
 	Data = GridTiles[Index];
 	return true;
+}
+
+bool AGrid::IsTileWalkable(FIntPoint Index)
+{
+	FTileData TileData;
+	GetTileDataFromIndex(Index, TileData);
+	return UTileDataUtility::IsTileWalkable(TileData.Type);
 }
 
 bool AGrid::IsIndexValid(FIntPoint Index)

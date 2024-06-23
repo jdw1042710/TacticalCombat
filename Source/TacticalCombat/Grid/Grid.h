@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "GridShapeData.h"
-#include "TileData.h"
+#include "Utilities/GridShapeData.h"
+#include "Utilities/TileData.h"
 #include "Grid.generated.h"
 
 
@@ -51,17 +51,23 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FVector GetTileLocationFromGridIndex(FIntPoint Index);
 	UFUNCTION(BlueprintCallable)
+
 	FQuat GetTileRotationFromGridIndex(FIntPoint Index);
 	UFUNCTION(BlueprintCallable)
 	FVector GetTileScale();
+
 	UFUNCTION(BlueprintCallable)
 	FVector GetCursorLocationOnGrid();
+
 	UFUNCTION(BlueprintCallable)
 	void SetTileCount(FIntPoint Value);
+
 	UFUNCTION(BlueprintCallable)
 	FVector2D GetTileCount() { return GridTileCount; }
+
 	UFUNCTION(BlueprintCallable)
 	void SetTileSize(FVector Value);
+
 	UFUNCTION(BlueprintCallable)
 	FVector GetTileSize() { return GridTileSize; }
 
@@ -71,10 +77,15 @@ public:
 	//Tile Index 및 Data 관련 함수들
 	UFUNCTION(BlueprintCallable)
 	FIntPoint GetTileIndexUnderCursor();
+
 	UFUNCTION(BlueprintCallable)
 	FIntPoint GetTileIndexFromWorldLocation(FVector Location);
+
 	UFUNCTION(BlueprintCallable)
 	bool GetTileDataFromIndex(FIntPoint Index, FTileData& Data);
+
+	UFUNCTION(BlueprintCallable)
+	bool IsTileWalkable(FIntPoint Index);
 	
 	UFUNCTION(BlueprintCallable)
 	TArray<FIntPoint> GetAllIndexesFromTileData();
