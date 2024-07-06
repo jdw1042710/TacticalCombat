@@ -86,6 +86,15 @@ private:
 	void PushTileInDiscoveredTiles(FPathfindingData TilePathData);
 
 	/// <summary>
+	/// TilePathData에서 Sorting을 위한 Tile Cost를 계산
+	/// </summary>
+	/// <param name="TilePathData"></param>
+	/// <returns></returns>
+	int32 CalculateTileCost(FPathfindingData TilePathData);
+
+	bool IsDiagonal(FIntPoint IndexA, FIntPoint IndexB) const;
+
+	/// <summary>
 	/// Discovered Tiles 배열에서 가장 Cost가 작은 타일를 반환
 	/// </summary>
 	/// <returns> 가장 Cost가 작은 타일의 Pathfinding Data</returns>
@@ -111,7 +120,7 @@ private:
 	/// </summary>
 	void ClearDataGeneretedDuringPathfinding();
 
-	TArray<FIntPoint> GetNeighborIndexes(FIntPoint Index, bool bIncludeDiagonals = false);
-	TArray<FIntPoint> GetNeighborIndexesForSquare(FIntPoint Index, bool bIncludeDiagonals = false);
+	TArray<FIntPoint> GetNeighborIndexes(FIntPoint Index, bool bIncludeDiagonals = false) const;
+	TArray<FIntPoint> GetNeighborIndexesForSquare(FIntPoint Index, bool bIncludeDiagonals = false) const;
 	
 };
