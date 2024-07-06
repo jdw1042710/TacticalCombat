@@ -49,11 +49,13 @@ void APlayerActions::SetMouseAction(TSubclassOf<UAction> LeftClickActionClass, T
 bool APlayerActions::IsMouseActionSet(TSubclassOf<UAction> MouseAction) const
 {
 	bool bIsLeftClickMouseActionSet =
-		(MouseLeftClickAction != nullptr)
-		&& (MouseAction == MouseLeftClickAction->GetClass());
+		(MouseLeftClickAction != nullptr) 
+		? (MouseAction == MouseLeftClickAction->GetClass())
+		: MouseAction == nullptr;
 	bool bIsRightClickMouseActionSet =
 		(MouseRightClickAction != nullptr)
-		&& (MouseAction == MouseRightClickAction->GetClass());
+		? (MouseAction == MouseRightClickAction->GetClass())
+		: MouseAction == nullptr;
 	return bIsLeftClickMouseActionSet || bIsRightClickMouseActionSet;
 }
 

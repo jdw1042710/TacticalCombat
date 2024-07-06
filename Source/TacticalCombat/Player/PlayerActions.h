@@ -31,6 +31,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetMouseAction(TSubclassOf<UAction> LeftClickAction, TSubclassOf<UAction> RightClickAction);
+
+	/// <summary>
+	/// 해당 Mouse Action이 MouseLeftClickAction 혹은 MouseRightClickAction의 Class와 동일한지 체크
+	/// </summary>
+	/// <param name="MouseAction"> 체크하고픈 MouseAction </param>
+	/// <returns></returns>
 	UFUNCTION(BlueprintCallable)
 	bool IsMouseActionSet(TSubclassOf<UAction> MouseAction) const;
 
