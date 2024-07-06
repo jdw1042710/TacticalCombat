@@ -23,6 +23,7 @@ enum class ETileState :uint8
 	Hovered,
 	Selected,
 	Neighbor,
+	IsInPath,
 };
 
 USTRUCT(BlueprintType)

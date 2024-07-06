@@ -80,6 +80,9 @@ FLinearColor AGridMeshInstance::GetColorFromStates(const TArray<ETileState>& Sta
 		case ETileState::Neighbor:
 			//Pink
 			return FLinearColor(1, 0.75, 0.79, 1);
+		case ETileState::IsInPath:
+			//Light Blue
+			return FLinearColor(0.67, 0.87, 0.90, 1);
 		}
 	}
 	return FLinearColor(0, 0, 0, 0);

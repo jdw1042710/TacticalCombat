@@ -212,12 +212,12 @@ TArray<FIntPoint> UGridPathfinding::GetNeighborIndexesForSquare(FIntPoint Index,
 	const TArray<FIntPoint> AdjacentOffsets = bIncludeDiagonals
 		? TArray<FIntPoint>({
 			{1, 0},
-			{1, 1},
 			{0, 1},
-			{-1, 1},
 			{-1, 0},
-			{-1, -1},
 			{0, -1},
+			{1, 1},
+			{-1, 1},
+			{-1, -1},
 			{1, -1},
 			})
 		: TArray<FIntPoint>({
