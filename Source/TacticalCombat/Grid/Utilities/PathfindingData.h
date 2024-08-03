@@ -17,6 +17,12 @@ struct FPathfindingData
 	FPathfindingData(FIntPoint Index, int32 CostToEnterTile, int32 CostFromStart, int32 HeuristicsCostToTarget, FIntPoint PreviousIndex);
 
 	/// <summary>
+	/// 무한대값 (문법상의 이유로 const가 지워졌으므로 주의)
+	/// </summary>
+	UPROPERTY(BlueprintReadOnly)
+	int32 InfiniteValue = 2147483647;
+
+	/// <summary>
 	/// 해당 타일의 Index
 	/// </summary>
 	UPROPERTY(BlueprintReadWrite)

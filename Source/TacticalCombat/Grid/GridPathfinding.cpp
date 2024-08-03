@@ -121,6 +121,7 @@ void UGridPathfinding::PushTileInDiscoveredTiles(FPathfindingData TilePathData)
 	if (DiscoveredTiles.Num() == 0)
 	{
 		DiscoveredTiles.Add(TilePathData.Index);
+		OnPathfindingDataUpdated.Broadcast(TilePathData.Index);
 		return;
 	}
 
@@ -137,12 +138,14 @@ void UGridPathfinding::PushTileInDiscoveredTiles(FPathfindingData TilePathData)
 		if (Cost < CurrentTileCost)
 		{
 			DiscoveredTiles.Insert(TilePathData.Index, i + 1);
+			OnPathfindingDataUpdated.Broadcast(TilePathData.Index);
 			return;
 		}
 	}
 
 	// CurrentTileCost가 가장 작은 경우, 가장 맨 앞에 insert 한다.
 	DiscoveredTiles.Insert(TilePathData.Index, 0);
+	OnPathfindingDataUpdated.Broadcast(TilePathData.Index);
 	
 }
 
@@ -200,6 +203,7 @@ void UGridPathfinding::ClearDataGeneretedDuringPathfinding()
 	PathfindingData.Empty();
 	DiscoveredTiles.Empty();
 	AnalysedTiles.Empty();
+	OnPathfindingDataCleared.Broadcast();
 }
 
 TArray<FIntPoint> UGridPathfinding::GetNeighborIndexes(FIntPoint Index, bool bIncludeDiagonals) const

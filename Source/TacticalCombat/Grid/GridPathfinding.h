@@ -7,6 +7,9 @@
 #include "Utilities/PathfindingData.h"
 #include "GridPathfinding.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPathfindingDataUpdated, FIntPoint, Index);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPathfindingDataCleared);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class TACTICALCOMBAT_API UGridPathfinding : public UActorComponent
@@ -16,6 +19,12 @@ class TACTICALCOMBAT_API UGridPathfinding : public UActorComponent
 public:	
 	// Sets default values for this component's properties
 	UGridPathfinding();
+
+	UPROPERTY(BlueprintAssignable)
+	FOnPathfindingDataUpdated OnPathfindingDataUpdated;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnPathfindingDataCleared OnPathfindingDataCleared;
 
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -38,6 +47,12 @@ public:
 	/// <returns> °æ·Î </returns>
 	UFUNCTION(BlueprintCallable)
 	TArray<FIntPoint> FindPath(FIntPoint Start, FIntPoint Target, bool bIncludeDiagonals = false);
+
+	UFUNCTION(BlueprintCallable)
+	TMap<FIntPoint, FPathfindingData> GetPathfindingData() const { return PathfindingData; }
+	
+	UFUNCTION(BlueprintCallable)
+	TArray<FIntPoint> GetDiscoveredTiles() const { return DiscoveredTiles; }
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
