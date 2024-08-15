@@ -53,11 +53,14 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	TArray<FIntPoint> GetDiscoveredTiles() const { return DiscoveredTiles; }
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
 private:
+	friend class UAction_Select_MinCost;
+
 	class AGrid* Grid;
 	
 	/// <summary>
@@ -133,6 +136,7 @@ private:
 	/// <summary>
 	/// Pathfinding동안 생성된 private 변수들을 Clear
 	/// </summary>
+	UFUNCTION(BlueprintCallable)
 	void ClearDataGeneretedDuringPathfinding();
 
 	TArray<FIntPoint> GetNeighborIndexes(FIntPoint Index, bool bIncludeDiagonals = false) const;
