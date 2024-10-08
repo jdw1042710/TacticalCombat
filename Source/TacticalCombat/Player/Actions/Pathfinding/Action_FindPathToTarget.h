@@ -26,9 +26,19 @@ public:
 	void SetIncludeDiagonals(bool flag) { bIncludeDiagonals = flag; }
 	UFUNCTION(BlueprintCallable)
 	bool GetIncludeDiagonals() { return bIncludeDiagonals; }
+
+	UFUNCTION(BlueprintCallable)
+	void SetDelayBetweenIterations(float Delay) { DelayBetweenIterations = Delay; }
+	UFUNCTION(BlueprintCallable)
+	float GetDelayBetweenIterations() { return DelayBetweenIterations; }
 protected:
 	bool bIncludeDiagonals = false;
 
+	float DelayBetweenIterations = 0.0f;
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	UFUNCTION(BlueprintCallable)
+	void AddStateOnTiles(TArray<FIntPoint> Path);
 };

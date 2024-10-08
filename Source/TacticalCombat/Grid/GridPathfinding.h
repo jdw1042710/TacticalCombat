@@ -11,12 +11,19 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPathfindingDataUpdated, FIntPoint
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPathfindingDataCleared);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPathfindingCompleted, TArray<FIntPoint>, Path);
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class TACTICALCOMBAT_API UGridPathfinding : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
+public:
+	/// <summary>
+	/// Pathfinding시 각 Iteration마다 걸리는 Delay Time
+	/// </summary>
+	float DelayBetweenIterations;
+
 	// Sets default values for this component's properties
 	UGridPathfinding();
 
@@ -25,6 +32,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnPathfindingDataCleared OnPathfindingDataCleared;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnPathfindingCompleted OnPathfindingCompleted;
 
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -46,13 +56,16 @@ public:
 	/// <param name="bIncludeDiagonals"> 대각선 이동 허용 여부</param>
 	/// <returns> 경로 </returns>
 	UFUNCTION(BlueprintCallable)
-	TArray<FIntPoint> FindPath(FIntPoint Start, FIntPoint Target, bool bIncludeDiagonals = false);
+	TArray<FIntPoint> FindPath(FIntPoint Start, FIntPoint Target, bool bIncludeDiagonals = false, float Delay = 0.0f);
 
 	UFUNCTION(BlueprintCallable)
 	TMap<FIntPoint, FPathfindingData> GetPathfindingData() const { return PathfindingData; }
 	
 	UFUNCTION(BlueprintCallable)
 	TArray<FIntPoint> GetDiscoveredTiles() const { return DiscoveredTiles; }
+
+	UFUNCTION(BlueprintCallable)
+	TSet<FIntPoint> GetAnalysedTiles() const { return AnalysedTiles; }
 
 protected:
 	// Called when the game starts
@@ -75,6 +88,17 @@ private:
 	/// PathFinding시 대각선 이동 허용 여부
 	/// </summary>
 	bool bIncludeDiagonalsDuringPathfinding;
+
+	/// <summary>
+	/// Delay있는 Pathfinding시 사용되는 TimeHandler
+	/// </summary>
+	FTimerHandle PathfindingTimeHandle;
+
+
+	/// <summary>
+	/// Pathfinding 결과
+	/// </summary>
+	TArray<FIntPoint> PathfindingResult;
 
 	/// <summary>
 	/// Pathfinding동안 발견한 (아직 탐색하지 않은) 타일 Index 배열  

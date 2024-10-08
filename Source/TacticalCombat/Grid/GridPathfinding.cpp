@@ -55,41 +55,64 @@ TArray<FPathfindingData> UGridPathfinding::GetValidTileNeighbors(FIntPoint Index
 	return Neighbors;
 }
 
-TArray<FIntPoint> UGridPathfinding::FindPath(FIntPoint Start, FIntPoint Target, bool bIncludeDiagonals)
+TArray<FIntPoint> UGridPathfinding::FindPath(FIntPoint Start, FIntPoint Target, bool bIncludeDiagonals, float Delay)
 {
 	// Start와 Path를 반대로 저장
 	// 결과값을 Reverse하지 않아도 됨
 	StartIndex = Target;
 	TargetIndex = Start;
 	bIncludeDiagonalsDuringPathfinding = bIncludeDiagonals;
+	DelayBetweenIterations = Delay;
 
 	ClearDataGeneretedDuringPathfinding();
 	if (IsInputDataValid())
 	{
+		FTimerDelegate PathfindingIteration = FTimerDelegate::CreateLambda(
+			[&]() {
+				if (DiscoveredTiles.Num() == 0) return;
+				FPathfindingData CurrentTile = PullCheapestTileOutOfDiscoveredTiles();
+				TArray<FPathfindingData> CurrentNeighbors = GetValidTileNeighbors(CurrentTile.Index, bIncludeDiagonalsDuringPathfinding);
+				for (auto Neighbor : CurrentNeighbors)
+				{
+					if (!AnalysedTiles.Contains(Neighbor.Index))
+					{
+						Neighbor.CostFromStart = CurrentTile.CostFromStart + Neighbor.CostToEnterTile;
+						Neighbor.HeuristicsCostToTarget = GetHeuristicsCostBetweenTwoTiles(Neighbor.Index, TargetIndex, bIncludeDiagonals);
+						Neighbor.PreviousIndex = CurrentTile.Index;
+						PushTileInDiscoveredTiles(Neighbor);
+					}
+					// Path가 완성된 경우, Path를 반환하고 Pathfinding을 종료
+					if (Neighbor.Index == TargetIndex)
+					{
+						PathfindingResult = GenerateReversedPath();
+						OnPathfindingCompleted.Broadcast(PathfindingResult);
+						GetWorld()->GetTimerManager().ClearTimer(PathfindingTimeHandle);
+					}
+				}
+			});
 		FPathfindingData TilePathData(StartIndex, 1, 0, GetHeuristicsCostBetweenTwoTiles(StartIndex, TargetIndex, bIncludeDiagonalsDuringPathfinding), FIntPoint(-1));
 		PushTileInDiscoveredTiles(TilePathData);
-		while (DiscoveredTiles.Num() > 0)
+		if(DelayBetweenIterations > 0)
 		{
-			FPathfindingData CurrentTile = PullCheapestTileOutOfDiscoveredTiles();
-			TArray<FPathfindingData> CurrentNeighbors = GetValidTileNeighbors(CurrentTile.Index, bIncludeDiagonalsDuringPathfinding);
-			for (auto Neighbor : CurrentNeighbors)
+			GetWorld()->GetTimerManager().SetTimer(
+				PathfindingTimeHandle,
+				PathfindingIteration,
+				DelayBetweenIterations,
+				true
+			);
+		}
+		else
+		{
+
+			while ((PathfindingResult.Num() == 0) && DiscoveredTiles.Num() > 0)
 			{
-				if (!AnalysedTiles.Contains(Neighbor.Index))
-				{
-					Neighbor.CostFromStart = CurrentTile.CostFromStart + Neighbor.CostToEnterTile;
-					Neighbor.HeuristicsCostToTarget = GetHeuristicsCostBetweenTwoTiles(Neighbor.Index, TargetIndex, bIncludeDiagonals);
-					Neighbor.PreviousIndex = CurrentTile.Index;
-					PushTileInDiscoveredTiles(Neighbor);
-				}
-				// Path가 완성된 경우, Path를 반환하고 Pathfinding을 종료
-				if(Neighbor.Index == TargetIndex)
-					return GenerateReversedPath();
+				PathfindingIteration.Execute();
 			}
 		}
 	}
 
-	// Start부터 Target까지의 경로가 존재하지 않음
-	return TArray<FIntPoint>();
+	// 더이상 return값이 사용되지 않음
+	return PathfindingResult;
 }
 
 bool UGridPathfinding::IsInputDataValid()
@@ -200,6 +223,7 @@ TArray<FIntPoint> UGridPathfinding::GenerateReversedPath()
 
 void UGridPathfinding::ClearDataGeneretedDuringPathfinding()
 {
+	PathfindingResult.Empty();
 	PathfindingData.Empty();
 	DiscoveredTiles.Empty();
 	AnalysedTiles.Empty();

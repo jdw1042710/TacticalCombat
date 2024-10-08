@@ -29,17 +29,28 @@ void UAction_FindPathToTarget::ExecuteAction(FIntPoint Index)
 	FIntPoint SelectedIndex = PlayerActions->GetSelectedTile();
 	FIntPoint HoveredIndex = Grid->GetTileIndexUnderCursor();
 	Grid->ClearStateFromTiles(ETileState::IsInPath);
-	TArray<FIntPoint> Path = GridPathfinding->FindPath(SelectedIndex,HoveredIndex, bIncludeDiagonals);
-	for (auto TileIndex : Path)
-	{
-		Grid->AddStateToTile(TileIndex, ETileState::IsInPath);
-	}
-	
+	GridPathfinding->OnPathfindingCompleted.AddUniqueDynamic(this, &UAction_FindPathToTarget::AddStateOnTiles);
+	TArray<FIntPoint> Path = GridPathfinding->FindPath(SelectedIndex,HoveredIndex, bIncludeDiagonals, DelayBetweenIterations);
 }
 
 void UAction_FindPathToTarget::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void UAction_FindPathToTarget::AddStateOnTiles(TArray<FIntPoint> Path)
+{
+	AGrid* Grid = PlayerActions->GetGrid();
+	if (Grid == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("There is no Grid on PlayerActions"));
+		return;
+	}
+
+	for (auto TileIndex : Path)
+	{
+		Grid->AddStateToTile(TileIndex, ETileState::IsInPath);
+	}
 }
 
 void UAction_FindPathToTarget::DestroyComponent(bool bPromoteChildren)

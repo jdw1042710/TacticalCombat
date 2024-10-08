@@ -24,6 +24,8 @@ enum class ETileState :uint8
 	Selected,
 	Neighbor,
 	IsInPath,
+	IsDiscovered,
+	IsAnalyesd,
 };
 
 USTRUCT(BlueprintType)
