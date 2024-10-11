@@ -90,6 +90,7 @@ TArray<FIntPoint> UGridPathfinding::FindPath(FIntPoint Start, FIntPoint Target, 
 					}
 				}
 			});
+		GetWorld()->GetTimerManager().ClearTimer(PathfindingTimeHandle);
 		FPathfindingData TilePathData(StartIndex, 1, 0, GetHeuristicsCostBetweenTwoTiles(StartIndex, TargetIndex, bIncludeDiagonalsDuringPathfinding), FIntPoint(-1));
 		PushTileInDiscoveredTiles(TilePathData);
 		if(DelayBetweenIterations > 0)

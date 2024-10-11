@@ -174,7 +174,12 @@ void AGrid::AddStateToTile(FIntPoint Index, ETileState State)
 	// 해당 State가 존재하는 경우 종료
 	if (Data.States.Contains(State)) return;
 	Data.States.AddUnique(State);
-
+	// ileStateToIndexes에 빈 배열도 존재하지 않는 경우, 빈 배열을 생성
+	if (!TileStateToIndexes.Contains(State))
+	{
+		TileStateToIndexes.Add(State, TArray<FIntPoint>());
+	}
+	TileStateToIndexes[State].Add(Index);
 	GridTiles[Index] = Data;
 	GridVisualizer->UpdateTileVisual(Data);
 	OnTileDataUpdated.Broadcast(Index);
@@ -190,24 +195,23 @@ void AGrid::RemoveStateFromTile(FIntPoint Index, ETileState State)
 	// 해당 State가 존재하지 않는 경우 종료
 	if (!Data.States.Contains(State)) return;
 
+
 	Data.States.Remove(State);
+	TileStateToIndexes[State].Remove(Index);
+
 	GridTiles[Index] = Data;
 	GridVisualizer->UpdateTileVisual(Data);
+	OnTileDataUpdated.Broadcast(Index);
 }
 
 TArray<FIntPoint> AGrid::GetAllTilesWithStates(ETileState State)
 {
-	TArray<FIntPoint> Indexes;
-	TArray<FTileData> Tiles;
-	GridTiles.GenerateValueArray(Tiles);
-	for (auto Tile : Tiles)
+	//해당하는 State가 없는 경우
+	if (!TileStateToIndexes.Contains(State))
 	{
-		if (Tile.States.Contains(State))
-		{
-			Indexes.Add(Tile.Index);
-		}
+		TileStateToIndexes.Add( State, TArray<FIntPoint>());
 	}
-	return Indexes;
+	return TileStateToIndexes[State];
 }
 
 void AGrid::ClearStateFromTiles(ETileState State)

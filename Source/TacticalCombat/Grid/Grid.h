@@ -150,6 +150,9 @@ protected:
 
 	TMap<FIntPoint, FTileData> GridTiles;
 
+	// ETileState를 가지고있는 타일의 Index배열을 저장하는 Map
+	TMap<ETileState, TArray<FIntPoint>> TileStateToIndexes;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	EGridShape GridShape = EGridShape::Square;
 
